@@ -13,6 +13,8 @@ type ChainName = 'Westend' | 'Polkadot' | 'Kusama' | 'Paseo';
 
 const chains: ChainName[] = ['Westend', 'Polkadot', 'Kusama', 'Paseo'];
 
+const BLOCK_TIME = 6; // Block time in seconds
+
 const App = () => {
   const [tpsData, setTpsData] = useState<Record<ChainName, ChainMetrics>>({
     Westend: { tps: 0, block: 0, weight: 0, kbps: 0 },
@@ -23,56 +25,38 @@ const App = () => {
 
   const sc = new StringCodec();
 
+  const totalTps = chains.reduce((acc, chain) => acc + tpsData[chain].tps, 0);
+  const formattedTotalTps = totalTps.toFixed(2);
+
+  const totalMbs = chains.reduce((acc, chain) => acc + tpsData[chain].kbps / 1024, 0); // Assuming KB/s
+  const formattedTotalMbs = totalMbs.toFixed(2);
+
   useEffect(() => {
-    const tpsTracker: Record<ChainName, { count: number; lastUpdated: number }> = {
-      Westend: { count: 0, lastUpdated: Date.now() },
-      Polkadot: { count: 0, lastUpdated: Date.now() },
-      Kusama: { count: 0, lastUpdated: Date.now() },
-      Paseo: { count: 0, lastUpdated: Date.now() },
-    };
-
-    const updateTPS = (chain: ChainName, extrinsicsCount: number) => {
-      const now = Date.now();
-      const chainStats = tpsTracker[chain];
-
-      if (now - chainStats.lastUpdated >= 1000) {
-        const tps = chainStats.count;
-        const block = Math.floor(Math.random() * 100000); // mock block number
-        const weight = Math.floor(Math.random() * 1000); // mock weight
-        const kbps = Math.random() * 10; // mock kb/s
-
-        setTpsData((prevData) => ({
-          ...prevData,
-          [chain]: { tps, block, weight, kbps },
-        }));
-
-        chainStats.count = 0;
-        chainStats.lastUpdated = now;
-      }
-
-      chainStats.count += extrinsicsCount;
-    };
-
-    const handleMessageForTPS = (msg: any) => {
-      const blockData = sc.decode(msg.data);
-      const parsedData = JSON.parse(blockData);
-      const chain = msg.subject.split('.')[0] as ChainName;
-      const extrinsicsCount = parsedData.extrinsics.length;
-
-      updateTPS(chain, extrinsicsCount);
-    };
-
     const setupNatsConnection = async () => {
       const nc = await connect({ servers: ['wss://dev.dotsentry.xyz/ws'] });
 
       const subscriptions = await Promise.all(
-        chains.map((chain) =>
-          nc.subscribe(`${chain}.*.*.*.Blocks.*.BlockContent`),
-        )
+        chains.map((chain) => ({
+          blockContentSub: nc.subscribe(`${chain}.*.*.*.Blocks.*.BlockContent`),
+        }))
       );
 
-      subscriptions.forEach(async (sub: any) => {
-        for await (const msg of sub) handleMessageForTPS(msg);
+      subscriptions.forEach(async (subObj: any, chainIndex: number) => {
+        for await (const msg of subObj.blockContentSub) {
+          const blockData = sc.decode(msg.data);
+          const parsedData = JSON.parse(blockData);
+          const chain = chains[chainIndex];
+
+          const extrinsicsCount = parsedData.extrinsics.length;
+          const tps = (extrinsicsCount / BLOCK_TIME).toFixed(2);
+          const weight = Math.floor(Math.random() * 1000);
+          const kbps = Math.random() * 10;
+
+          setTpsData((prevData) => ({
+            ...prevData,
+            [chain]: { ...prevData[chain], tps: parseFloat(tps), weight, kbps },
+          }));
+        }
       });
     };
 
@@ -90,12 +74,14 @@ const App = () => {
         <div className="dropdown">
           <button className="dropdowntext">Polkadot</button>
           <div className="dropdowncontent">
-            <a href="#">Learn</a>
-            <a href="#">Build</a>
+            <a href="https://polkadot.com/get-started" target="_blank" rel="noopener noreferrer">Learn</a>
+            <a href="https://polkadot.com/developers" target="_blank" rel="noopener noreferrer" >Build</a>
           </div>
         </div>
         <div className="socialshare">
+        <a href="https://x.com/polkadot" target="_blank" rel="noopener noreferrer">
           <div className="twitter"></div>
+          </a>
         </div>
         <div className="currentTime" id="currentTime"></div>
       </div>
@@ -108,6 +94,18 @@ const App = () => {
 
         {/* Content Area */}
         <div className="contentarea">
+          {/* TPS and MB/s Total Box */}
+          <div className="metrics-total">
+            <div className="tps-total">
+              <span>Total TPS: </span>
+              <span>{formattedTotalTps}</span>
+            </div>
+            <div className="mbs-total">
+              <span>Total MB/s: </span>
+              <span>{formattedTotalMbs}</span>
+            </div>
+          </div>
+
           <div className="textbox">
             <table className="chain-table">
               <thead>
@@ -121,10 +119,10 @@ const App = () => {
               </thead>
               <tbody>
                 {chains.map((chain, index) => (
-                  <tr key={index}>
+                  <tr key={index} className={chain === 'Polkadot' ? 'polkadot-highlight' : ''}>
                     <td>{chain}</td>
                     <td>{tpsData[chain].block}</td>
-                    <td>{tpsData[chain].tps}</td>
+                    <td>{tpsData[chain].tps.toFixed(2)}</td>
                     <td>{tpsData[chain].weight}</td>
                     <td>{tpsData[chain].kbps.toFixed(2)}</td>
                   </tr>
@@ -144,8 +142,19 @@ const App = () => {
         </div>
       </div>
 
-      {/* Bottom Panel */}
-      <div className="bottompanel"></div>
+      {/* Bottom Panel / Footer */}
+      <div className="footer">
+        <div className="footer-button">
+          <a href="#">Feedback</a>
+        </div>
+        <div className="footer-button">
+          <a href="#">Add Chain</a>
+        </div>
+        <div className="footer-button">
+          <a href="#">Source Code</a>
+        </div>
+        <div className="footer-text">polkadot.wtf</div>
+      </div>
     </div>
   );
 };
