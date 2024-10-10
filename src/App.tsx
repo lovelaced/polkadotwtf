@@ -5,7 +5,7 @@ import { Footer } from './components/Footer';
 import { MetricsTotal } from './components/MetricsTotal';
 import { ChainTable } from './components/ChainTable';
 import './App.css';
-import { ChainName } from './types/ChainMetrics';
+import { ChainName } from './types/chains';
 
 const chains: ChainName[] = ['Westend', 'Polkadot', 'Kusama', 'Paseo'];
 
@@ -24,7 +24,7 @@ const App: React.FC = () => {
       <div className="divider"></div>
       <div className="container largecontainer">
         <div className="windowtitle">
-          <div className="windowtitlename">polkadot.wtf - built by erin</div>
+          <div className="windowtitlename">polkadot.wtf</div>
         </div>
 
         <div className="contentarea">
@@ -33,6 +33,8 @@ const App: React.FC = () => {
             <ChainTable tpsData={tpsData} chains={chains} />
           </div>
         </div>
+        <div className="divider"></div>
+        <div className="divider"></div>
       </div>
       <Footer />
     </div>

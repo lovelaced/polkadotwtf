@@ -1,17 +1,17 @@
+// src/hooks/useNatsConnection.ts
 import { useState, useEffect } from 'react';
 import { connect, StringCodec } from 'https://cdn.jsdelivr.net/npm/nats.ws@1.10.0/esm/nats.js';
-import { ChainMetrics, ChainName } from '../types/ChainMetrics';
+import { ChainMetrics, ChainName, chainNames } from '../types/chains';
 
 const BLOCK_TIME = 6; // Block time in seconds
-const chains: ChainName[] = ['Westend', 'Polkadot', 'Kusama', 'Paseo'];
 
 export const useNatsConnection = () => {
-  const [tpsData, setTpsData] = useState<Record<ChainName, ChainMetrics>>({
-    Westend: { tps: 0, block: 0, weight: 0, kbps: 0 },
-    Polkadot: { tps: 0, block: 0, weight: 0, kbps: 0 },
-    Kusama: { tps: 0, block: 0, weight: 0, kbps: 0 },
-    Paseo: { tps: 0, block: 0, weight: 0, kbps: 0 },
-  });
+  const [tpsData, setTpsData] = useState<Record<ChainName, ChainMetrics>>(
+    chainNames.reduce((acc, chain) => {
+      acc[chain] = { tps: 0, block: 0, weight: 0, kbps: 0 };
+      return acc;
+    }, {} as Record<ChainName, ChainMetrics>)
+  );
 
   const sc = new StringCodec();
 
@@ -20,7 +20,7 @@ export const useNatsConnection = () => {
       const nc = await connect({ servers: ['wss://dev.dotsentry.xyz/ws'] });
 
       const subscriptions = await Promise.all(
-        chains.map((chain) => ({
+        chainNames.map((chain) => ({
           blockContentSub: nc.subscribe(`${chain}.*.*.*.Blocks.*.BlockContent`),
         }))
       );
@@ -29,7 +29,7 @@ export const useNatsConnection = () => {
         for await (const msg of subObj.blockContentSub) {
           const blockData = sc.decode(msg.data);
           const parsedData = JSON.parse(blockData);
-          const chain = chains[chainIndex];
+          const chain = chainNames[chainIndex];
 
           const blockNumber = parsedData.number; // Extract the block number from the message
           const extrinsicsCount = parsedData.extrinsics.length;
@@ -56,4 +56,5 @@ export const useNatsConnection = () => {
 
   return tpsData;
 };
+
 export default useNatsConnection;

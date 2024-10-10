@@ -1,13 +1,17 @@
 export const Header = () => (
   <div className="titlebar">
-    <div className="logo"></div>
+    <div className="dropdown">
+    <button className="logo"></button>
+    <div className="dropdowncontent">
+        <a href="https://polkadot.com/get-started" target="_blank" rel="noopener noreferrer">About this blockchain...</a>
+    </div> 
+    </div>
     <div className="headerlinks">
-      <a href="#">Home</a>
+      <a href="https://polkadot.wtf">Home</a>
     </div>
     <div className="dropdown">
       <button className="dropdowntext">Polkadot</button>
       <div className="dropdowncontent">
-        <a href="https://polkadot.com/get-started" target="_blank" rel="noopener noreferrer">Learn</a>
         <a href="https://polkadot.com/developers" target="_blank" rel="noopener noreferrer">Build</a>
       </div>
     </div>
