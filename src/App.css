@@ -146,8 +146,6 @@ img {
   padding-left: 10px;
 }
 
-
-
 .divider {
   height: 40px;
 }
@@ -195,6 +193,61 @@ img {
   border: 2px solid black;
   box-shadow: inset 0px 0px 0px 1px #e0e0e0; 
 }
+
+/* Container for the radio button group */
+.relay-selector {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  font-family: 'Chicago Plain', sans-serif;
+}
+
+/* Style for each radio button label */
+.relay-label {
+  display: flex;
+  align-items: center;
+  margin: 0 10px;
+  cursor: pointer;
+  font-size: 16px;
+  color: black;
+  position: relative; /* Ensure proper alignment */
+}
+
+/* Hide the actual radio button input */
+input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Custom radio button style */
+.custom-radio {
+  width: 17px;
+  height: 17px;
+  border: 2px solid black;
+  border-radius: 50%;
+  background-color: white;
+  margin-right: 8px;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* When the radio button is checked, fill in the center circle */
+input[type="radio"]:checked + .custom-radio::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background-color: black;
+  border-radius: 50%;
+}
+
 
 .textbox {
   padding-left: 60px;
@@ -351,14 +404,14 @@ tr:hover td {
   }
 
   .chain-table {
-    font-size: 0.85rem; /* Smaller font size for better fit */
+    font-size: 0.7rem; /* Smaller font size for better fit */
     padding: 1px;
     justify-content: center;
   }
 
   th, td {
     padding: 5px; /* Reduce padding on mobile */
-    font-size: 0.85rem; /* Slightly smaller text */
+    font-size: 0.7rem; /* Slightly smaller text */
     white-space: normal; /* Allow text wrapping */
   }
 

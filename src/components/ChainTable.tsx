@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
-import { ChainMetrics, ChainName } from '../types/chains';
-import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, MB_TO_KB } from '../constants';
+import { PolkadotChainName, KusamaChainName, ChainMetrics } from '../types/chains';
+import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, MB_TO_KB, GAS_TO_MGAS } from '../constants';
 
 interface ChainTableProps {
-  tpsData: Record<ChainName, ChainMetrics>;
-  weightData: Record<ChainName, number>;
-  chains: ChainName[];
+  tpsData: Record<PolkadotChainName | KusamaChainName, ChainMetrics>;
+  weightData: Record<PolkadotChainName | KusamaChainName, number>;
+  chains: (PolkadotChainName | KusamaChainName)[];
 }
 
 type SortColumn = keyof ChainMetrics | 'chainName' | 'gas' | 'weight';
 
 export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, chains }) => {
-  // Initialize sorting with gas, largest first (desc)
+  // The rest of the component stays the same, using both Polkadot and Kusama chain names
   const [sortConfig, setSortConfig] = useState<{ column: SortColumn | null; direction: 'asc' | 'desc' | null }>({
     column: 'gas',
     direction: 'desc',
   });
+
+  // log the weightData
+    console.log(weightData);
 
   const renderLoadingIcon = () => (
     <div className="loading-bar-container">
@@ -23,13 +26,17 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
     </div>
   );
 
-  // Function to check if the row has fully loaded data
-  const isFullyLoaded = (chain: ChainName) => {
+// Function to check if the row has fully loaded data
+const isFullyLoaded = (chain: PolkadotChainName | KusamaChainName) => {
     const data = tpsData[chain];
-    return data.block > 0 && data.tps > 0 && weightData[chain] > 0;
+    return data?.block > 0 && data?.tps > 0 && weightData[chain] > 0;
   };
+  
 
-  // Sort chains based on fully loaded status first, then based on the selected column
+  // Calculate gas for each chain based on weightData (KB/s)
+  const calculateGas = (weight: number) => (weight * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS)).toFixed(2);
+
+  // Sort chains based on fully loaded status and selected sort configuration
   const sortedChains = [...chains].sort((a, b) => {
     const aFullyLoaded = isFullyLoaded(a);
     const bFullyLoaded = isFullyLoaded(b);
@@ -39,7 +46,7 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
     if (!aFullyLoaded && bFullyLoaded) return 1;
 
     // If no sorting is selected, return 0 (no sorting applied)
-    if (!sortConfig || !sortConfig.column || !sortConfig.direction) return 0;
+    if (!sortConfig.column || !sortConfig.direction) return 0;
 
     const column = sortConfig.column;
     const direction = sortConfig.direction === 'asc' ? 1 : -1;
@@ -48,14 +55,12 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
       return a.localeCompare(b) * direction;
     }
 
-    // Sorting logic for tpsData (block, tps, etc.)
     if (column !== 'weight' && column !== 'gas') {
       const aValue = tpsData[a][column as keyof ChainMetrics];
       const bValue = tpsData[b][column as keyof ChainMetrics];
       return ((aValue as number) - (bValue as number)) * direction;
     }
 
-    // Sorting logic for weightData and gas
     if (column === 'gas') {
       const aGas = weightData[a] * (MB_TO_GAS / PROOF_SIZE_MB);
       const bGas = weightData[b] * (MB_TO_GAS / PROOF_SIZE_MB);
@@ -64,14 +69,9 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
 
     const aWeight = weightData[a] ?? 0;
     const bWeight = weightData[b] ?? 0;
-
     return (aWeight - bWeight) * direction;
   });
 
-  // Calculate gas for each chain based on weightData (KB/s)
-  const calculateGas = (weight: number) => (weight * (MB_TO_GAS / PROOF_SIZE_MB)).toFixed(2);
-
-  // Modified requestSort to handle third click (no sorting)
   const requestSort = (column: SortColumn) => {
     if (sortConfig.column === column) {
       const newDirection = sortConfig.direction === 'desc' ? 'asc' : sortConfig.direction === 'asc' ? null : 'desc';
@@ -81,7 +81,6 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
     }
   };
 
-  // Show the sorting indicator based on current sort configuration
   const renderSortIndicator = (column: SortColumn) => {
     if (sortConfig.column !== column || !sortConfig.direction) return null;
     return sortConfig.direction === 'asc' ? '▲' : '▼';
@@ -101,7 +100,7 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
             TPS {renderSortIndicator('tps')}
           </th>
           <th onClick={() => requestSort('gas')} className="sortable">
-            Gas/s {renderSortIndicator('gas')}
+            MGas/s {renderSortIndicator('gas')}
           </th>
           <th onClick={() => requestSort('weight')} className="sortable">
             KB/s {renderSortIndicator('weight')}
@@ -118,22 +117,13 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
           return (
             <tr key={index} className={chain === 'Polkadot' ? 'polkadot-highlight' : ''}>
               <td>{chain}</td>
-              <td>{data.block > 0 ? data.block : renderLoadingIcon()}</td>
-              <td>{data.tps > 0 ? data.tps.toFixed(2) : renderLoadingIcon()}</td>
+              <td>{data?.block > 0 ? data.block : renderLoadingIcon()}</td>
+              <td>{data?.tps > 0 ? data.tps.toFixed(2) : renderLoadingIcon()}</td>
               <td>{typeof gas === 'string' ? gas : renderLoadingIcon()}</td>
               <td>{weight_kb > 0 ? weight_kb.toFixed(2) : renderLoadingIcon()}</td>
             </tr>
           );
         })}
-        {[...Array(40)].map((_, i) => (
-          <tr key={`placeholder-${i}`}>
-            <td>Future Chain {i + 1}</td>
-            <td>--</td>
-            <td>--</td>
-            <td>--</td>
-            <td>--</td>
-          </tr>
-        ))}
       </tbody>
     </table>
   );

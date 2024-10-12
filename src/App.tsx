@@ -1,41 +1,72 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNatsConnection } from './hooks/useNatsConnection';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { MetricsTotal } from './components/MetricsTotal';
 import { ChainTable } from './components/ChainTable';
+import { RelaySelector } from './components/RelaySelector';
 import './App.css';
-import { chainsConfig, paraIdToChainName, ChainName } from './types/chains';
+import {
+  polkadotChainNames,
+  kusamaChainNames,
+  polkadotParaIdToChainName,
+  kusamaParaIdToChainName,
+  PolkadotChainName,
+  KusamaChainName,
+} from './types/chains';
 import useWeightConsumption from './hooks/useWeightConsumption';
 import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, GAS_TO_MGAS } from './constants';
 
 const App: React.FC = () => {
-  const tpsData = useNatsConnection();
+  const [selectedRelay, setSelectedRelay] = useState<'Polkadot' | 'Kusama'>('Polkadot'); // Relay selector
+
+  const tpsData = useNatsConnection(selectedRelay);
   const consumptionData = useWeightConsumption('ws://192.168.1.232:9001');
 
-  // Get chain names dynamically from the config
-  const chainNames = Object.keys(chainsConfig) as ChainName[];
+  // Select the chain names and mappings based on the selected relay
+  const chainNames = selectedRelay === 'Polkadot' ? polkadotChainNames : kusamaChainNames;
+  const paraIdToChainName = selectedRelay === 'Polkadot' ? polkadotParaIdToChainName : kusamaParaIdToChainName;
 
-  // Map weight data by para_id to chain names, defaulting to 0 if no data
-  const weightData: Record<ChainName, number> = chainNames.reduce((acc, chain) => {
-    const paraId = Object.keys(paraIdToChainName).find((key) => paraIdToChainName[Number(key)] === chain);
-    const chainData = consumptionData[Number(paraId)];
-    return {
-      ...acc,
-      [chain]: chainData ? chainData.total_proof_size : 0,
-    };
-  }, {} as Record<ChainName, number>);
+  const weightData: Record<PolkadotChainName | KusamaChainName, number> = chainNames.reduce((acc, chain) => {
+    // Get the paraId from the mapping
+    const paraId = Object.keys(paraIdToChainName).find(key => paraIdToChainName[Number(key)] === chain);
 
-  const totalTps = chainNames.reduce((acc, chain) => acc + tpsData[chain].tps, 0);
+    if (paraId) {
+      // Find the corresponding chain data using para_id
+      const chainData = consumptionData[Number(paraId)];
+
+      // Only process chains that match the selected relay (Polkadot or Kusama)
+      if (chainData?.relay === selectedRelay) {
+        // Safely retrieve proof size, falling back to 0 if not present
+        const proofSize = chainData?.ref_time?.mandatory ?? chainData?.total_proof_size ?? 0;
+
+        return {
+          ...acc,
+          [chain]: proofSize,
+        };
+      }
+    }
+
+    // Return the accumulator unchanged if no data is available
+    return acc;
+  }, {} as Record<PolkadotChainName | KusamaChainName, number>);
+
+  // Calculate total TPS, MB/s, and Gas using the weightData
+  const totalTps = chainNames.reduce((acc, chain) => acc + (tpsData[chain]?.tps || 0), 0);
   const totalMbs = chainNames.reduce((acc, chain) => {
-    const chainMbs = (weightData[chain] * PROOF_SIZE_MB) / BLOCK_TIME;
+    const chainMbs = (weightData[chain] || 0) * PROOF_SIZE_MB / BLOCK_TIME;
+    if (Number.isNaN(chainMbs)) {
+      return acc;
+    }
     return acc + chainMbs;
   }, 0);
+
   const totalMGas = totalMbs * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS);
 
-  const tpsRelay = tpsData.Polkadot.tps;
-  const weightRelay = weightData.Polkadot;
-  const gasRelay = weightRelay * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS);
+  // Retrieve metrics for the selected relay
+  const tpsRelay = tpsData[selectedRelay]?.tps || 0;
+  const weightRelay = weightData[selectedRelay] || 0;
+  const gasRelay = weightRelay * PROOF_SIZE_MB / BLOCK_TIME * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS);
 
   const formattedTotalTps = totalTps.toFixed(2);
   const formattedTotalMbs = totalMbs.toFixed(2);
@@ -51,7 +82,20 @@ const App: React.FC = () => {
         </div>
 
         <div className="contentarea">
-          <MetricsTotal totalTps={formattedTotalTps} totalMbs={formattedTotalMbs} totalGas={formattedTotalGas} tpsRelay={tpsRelay} weightRelay={weightRelay} gasRelay={gasRelay}/>
+          <RelaySelector
+            selectedRelay={selectedRelay}
+            onRelayChange={setSelectedRelay}
+          />
+
+          <MetricsTotal
+            totalTps={formattedTotalTps}
+            totalMbs={formattedTotalMbs}
+            totalGas={formattedTotalGas}
+            tpsRelay={tpsRelay}
+            weightRelay={weightRelay}
+            gasRelay={gasRelay}
+          />
+
           <div className="textbox">
             <ChainTable tpsData={tpsData} weightData={weightData} chains={chainNames} />
           </div>

@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 // Define the shape of the data you're receiving (e.g., WeightConsumption)
 interface ConsumptionUpdate {
   para_id: number;
+  relay: string;
   ref_time: {
     normal: number;
     operational: number;
@@ -35,13 +36,10 @@ export const useWeightConsumption = (url: string, retryInterval = 5000) => {
       console.log('WebSocket connection established.');
       isConnecting.current = false; // Connection established
     };
-
     // Handle WebSocket messages
     websocket.onmessage = (event) => {
       try {
         const parsedData: ConsumptionUpdate = JSON.parse(event.data);
-        console.log('Received data:', parsedData);
-
         // Update state by merging the new data into the existing data
         setData((prevData) => ({
           ...prevData,
