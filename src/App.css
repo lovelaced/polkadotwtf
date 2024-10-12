@@ -1,6 +1,6 @@
 @font-face {
-  font-family: "Geneva";
-  src: url('src/assets/geneva.ttf') format("ttf");
+  font-family: "DePixelKlein";
+  src: url('src/assets/DePixelKlein.ttf') format("truetype");
 }
 
 @font-face {
@@ -19,10 +19,14 @@
 
 /* Body Styles */
 body {
-  font-family: 'Chicago Plain';
   background-image: url('src/img/background.png');
-  background-repeat: repeat; /* To tile the image */
+  background-repeat: repeat;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: 'DePixelKlein', sans-serif;
 }
 
 /* Titlebar */
@@ -31,35 +35,23 @@ body {
   border: 1px solid black;
   width: 100%;
   height: 30px;
-  font-size: 1rem;
+  font-size: 18px;
 }
 
 .logo {
   background-image: url('src/img/polkadot_32x32.png');
   background-size: contain;
   background-repeat: no-repeat;
-  margin-left: 10px;
-  margin-right: 20px;
+  margin-left: 30%;
+  margin-right: 40px;
   margin-top: 3px;
   width: 22px;
   height: 22px;
   float: left;
   border: none;
+  cursor: pointer;
+  outline: none;
   text-decoration: none;
-}
-
-.headerlinks {
-  gap: 10px;
-  float: left;
-}
-
-.headerlinks a {
-  font-size: 1rem;
-  color: black;
-  text-decoration: none;
-  float: left;
-  margin-right: 27px;
-  margin-top: 4px;
 }
 
 /* Dropdown */
@@ -126,9 +118,6 @@ body {
   margin-left: 99%;
   width: 25px;
   height: 25px;
-}
-
-.twitter {
   background-image: url('src/img/twitter.png');
 }
 
@@ -139,25 +128,23 @@ body {
 .windowtitle {
   text-align: center;
   background-color: blue;
-  height: 30px; /* Adjusted height for better visibility */
+  height: 30px; 
   width: 60%;
   margin: auto;
   border: 1px outset black;
   
-  /* Use background layers to properly display left, right, and center images */
   background: url('src/img/windowborderleft.png') no-repeat left bottom,
               url('src/img/windowborderright.png') no-repeat right bottom,
               url('src/img/windowbordercenter.png') no-repeat center bottom, #fff;
   
-  /* Adjusted positions for accurate placement */
   background-position: 
-      0 bottom, /* Left image at bottom left */
-      100% bottom, /* Right image at bottom right */
-      center bottom; /* Center image filling the middle */
+      0 bottom, 
+      100% bottom, 
+      center bottom;
   background-size: 
-      auto 100%, /* Left image scales horizontally while maintaining height */
-      auto 100%, /* Right image scales horizontally while maintaining height */
-      auto 100%; /* Center image fills the remaining width */
+      auto 100%, 
+      auto 100%, 
+      auto 100%;
 }
 
 .windowtitlename {
@@ -179,12 +166,14 @@ body {
   margin-bottom: 30px;
   background-color: white;
   border: 2px solid black;
-  box-shadow: inset 0px 0px 0px 1px #e0e0e0; /* Subtle 3D shadow */
+  box-shadow: inset 0px 0px 0px 1px #e0e0e0; 
 }
 
 .textbox {
-  font-family: 'Geneva', sans-serif;
-  padding: 60px;
+  padding-left: 60px;
+  padding-right: 60px;
+  padding-top: 0px;
+  padding-bottom: 60px;
   text-align: left;
 }
 
@@ -192,29 +181,29 @@ body {
 .chain-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 1rem;
-  border: 2px outset #cccccc; /* Outer border for the 3D effect */
+  font-size: 1.3rem;
+  border: 2px outset #cccccc;
   margin-top: 10px;
   text-align: right;
 }
 
 /* Table Headers */
 th {
-  background-color: #e0e0e0; /* Light gray for headers */
+  background-color: #e0e0e0; 
   color: black;
   font-weight: bold;
   padding: 10px;
-  border: 2px solid #b0b0b0; /* Darker gray for border */
-  box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #b0b0b0; /* 3D effect */
-  cursor: pointer; /* Cursor changes for sortable columns */
+  border: 2px solid #b0b0b0;
+  box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #b0b0b0;
+  cursor: pointer;
 }
 
 th.sortable:hover {
-  background-color: #d0d0d0; /* Slightly darker gray on hover */
+  background-color: #d0d0d0;
 }
 
 th:first-child {
-  text-align: left; /* Left align the first column header */
+  text-align: left; 
 }
 
 th.sortable::after {
@@ -228,109 +217,164 @@ th.sortable::after {
 /* Table Rows */
 td {
   padding: 10px;
-  background-color: #f0f0f0; /* Light gray for rows */
-  border: 1px solid #b0b0b0; /* Darker border for 3D effect */
-  box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #b0b0b0; /* 3D inset shadow */
+  background-color: #f0f0f0;
+  border: 1px solid #b0b0b0;
+  box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #b0b0b0;
 }
 
 td:first-child {
-  text-align: left; /* Left-align the first column */
+  text-align: left; 
 }
 
-/* Alternating row colors for contrast */
 tr:nth-child(even) td {
-  background-color: #e5e5e5; /* Darker gray for even rows */
+  background-color: #e5e5e5;
 }
 
-/* Hover effect for rows */
 tr:hover td {
-  background-color: #b0c0e0 !important; /* Soft blue for row hover */
+  background-color: #b0c0e0 !important;
 }
 
-/* Highlight Polkadot row with pink text and subtle background */
 .polkadot-highlight td {
   font-weight: bold;
-  background-color: rgba(230, 0, 122, 0.1) !important; /* Light pink background */
+  background-color: rgba(230, 0, 122, 0.1) !important;
 }
 
 /* TPS, MB/s, and Gas Total Boxes */
+/* Container for buttons and description */
+.metrics-total-container {
+  width: 90%;
+  margin: 20px auto;
+  text-align: center;
+}
+
 .metrics-total {
   display: flex;
-  justify-content: space-around; /* Equal space between boxes */
+  justify-content: space-around;
   padding: 10px 0;
-  width: 90%; /* More space for the boxes */
-  margin: 20px auto;
 }
 
-.tps-total, .mbs-total, .gas-total {
+.metric-button {
+  background-color: #dcdcdc;
+  border: 2px solid #ffffff;
+  border-right-color: #8a8a8a;
+  border-bottom-color: #8a8a8a;
   padding: 10px;
-  margin: 0 10px; /* Add some space between boxes */
-  background-color: #dcdcdc; /* Light gray background for retro feel */
-  border: 2px outset #a9a9a9; /* Use 3D effect for boxes */
+  font-family: 'Chicago Plain', sans-serif;
+  font-size: 20px;
+  width: 30%;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
   text-align: center;
-  font-family: 'Chicago Plain';
-  font-size: 16px;
-  width: 30%; /* Make sure all three boxes fit side by side */
-  box-shadow: inset 1px 1px #ffffff, inset -1px -1px #888888; /* Subtle shadow for 3D effect */
-}
-/*
-.tps-total span:first-child, 
-.mbs-total span:first-child, 
-.gas-total span:first-child {
-  color: #4d4d4d; 
+  box-shadow: inset 1px 1px #ffffff, inset -1px -1px #8a8a8a;
 }
 
-.tps-total span:not(:first-child), 
-.mbs-total span:not(:first-child), 
-.gas-total span:not(:first-child) {
-  color: black;
+.metric-button span {
+  font-weight: bold;
 }
-*/
-/* Slight hover effect for retro interactivity */
-.tps-total:hover, .mbs-total:hover, .gas-total:hover {
-  background-color: #e0e0e0; /* Slightly darker gray on hover */
-  border: 2px inset #a9a9a9; /* Inset to mimic "pressed" style */
+
+/* Active (Pressed) Button State */
+.metric-button.active {
+  background-color: #d4d4d4;
+  border-top-color: #8a8a8a;
+  border-left-color: #8a8a8a;
+  border-right-color: #ffffff;
+  border-bottom-color: #ffffff;
+  box-shadow: inset 1px 1px 1px #8a8a8a, inset -1px -1px 1px #ffffff;
 }
 
 .multiplier {
-  color: #e6007a; /* Pink text for the multiplier */
+  color: #e6007a;
 }
 
-/* Box Container */
-.boxleft, .boxmid, .boxright {
-  display: inline-block;
-  width: 30%;
-  height: auto;
-  text-align: center;
-  padding: 20px;
-  background-color: lightgrey;
-  border: solid grey;
-}
-
-.boxmid {
-  margin: 0 5px;
-}
-
-/* Large Container */
-.largecontainer {
-  width: 100%;
+/* Description text */
+.metric-description {
+  margin-top: 20px;
   padding: 10px;
+  font-size: 18px;
+  color: #333;
+  border-radius: 4px;
+  width: 80%;
+  margin: 0 auto;
+  height: 50px;
 }
 
-/* Tiny Text */
-.tinytext {
-  font-family: 'Geneva', sans-serif;
-  font-size: 0.875rem;
-  padding: 10px;
-}
+/* Responsive Design */
+@media (max-width: 1178px) {
 
-/* Container Grey */
-.containergrey {
-  background-color: lightgrey;
-  width: 90%;
-  margin: auto;
-  padding: 20px;
-  border: solid grey;
+  .titlebar {
+    height: 40px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .windowtitle, .contentarea {
+    width: 95%;
+  }
+
+  .chain-table {
+    font-size: 0.85rem; /* Smaller font size for better fit */
+    padding: 1px;
+    justify-content: center;
+  }
+
+  th, td {
+    padding: 5px; /* Reduce padding on mobile */
+    font-size: 0.85rem; /* Slightly smaller text */
+    white-space: normal; /* Allow text wrapping */
+  }
+
+  th, td:first-child {
+    text-align: left;
+  }
+
+  .loading-bar-container {
+    width: 30px; /* Even smaller loading bar for mobile */
+    height: 8px;
+  }
+
+  .metrics-total {
+    flex-direction: row;
+    align-items: center;
+    padding-bottom: 0px;
+  }
+
+  .metric-button {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 30%;
+    height: 10%;
+    margin-bottom: 10px;
+    font-size: 1rem;
+  }
+
+  .metric-button span {
+    display: block;
+  }
+
+  .metric-description {
+    width: 95%;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    font-size: 14px;
+  }
+
+  .textbox {
+    padding: 0px 2px 0px 2px;
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+
+  .divider {
+    height: 20px;
+  }
+  /* hide footer on mobile */
+  .footer {
+    display: none !important;
+  }
 }
 
 /* Footer */
@@ -359,7 +403,6 @@ tr:hover td {
   text-align: center;
   cursor: pointer;
   transition: all 0.1s ease-in-out;
-  box-shadow: inset 0px 0px 0px 1px #ffffff, inset 0px 0px 0px 2px #8a8a8a;
 }
 
 .footer-button a {
@@ -415,22 +458,5 @@ tr:hover td {
   }
   100% {
     left: calc(100% - 16px); /* Keep the bar inside the container */
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .windowtitle, .contentarea {
-    width: 90%;
-  }
-
-  .titlebar {
-    flex-direction: column;
-    height: auto;
-    padding: 10px;
-  }
-
-  .titlebar a {
-    font-size: 0.9rem;
   }
 }

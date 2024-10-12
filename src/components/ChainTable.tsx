@@ -11,7 +11,11 @@ interface ChainTableProps {
 type SortColumn = keyof ChainMetrics | 'chainName' | 'gas' | 'weight';
 
 export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, chains }) => {
-  const [sortConfig, setSortConfig] = useState<{ column: SortColumn; direction: 'asc' | 'desc' | null } | null>(null);
+  // Initialize sorting with gas, largest first (desc)
+  const [sortConfig, setSortConfig] = useState<{ column: SortColumn; direction: 'asc' | 'desc' }>({
+    column: 'gas',
+    direction: 'desc',
+  });
 
   const renderLoadingIcon = () => (
     <div className="loading-bar-container">
@@ -19,9 +23,22 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
     </div>
   );
 
-  // Sort chains based on the selected column
+  // Function to check if the row has fully loaded data
+  const isFullyLoaded = (chain: ChainName) => {
+    const data = tpsData[chain];
+    return data.block > 0 && data.tps > 0 && weightData[chain] > 0;
+  };
+
+  // Sort chains based on fully loaded status first, then based on the selected column
   const sortedChains = [...chains].sort((a, b) => {
-    if (!sortConfig || !sortConfig.direction) return 0; // No sorting applied
+    const aFullyLoaded = isFullyLoaded(a);
+    const bFullyLoaded = isFullyLoaded(b);
+
+    // Prioritize fully loaded rows
+    if (aFullyLoaded && !bFullyLoaded) return -1;
+    if (!aFullyLoaded && bFullyLoaded) return 1;
+
+    // If both rows have the same loaded status, apply sorting based on user-selected column
     const column = sortConfig.column;
     const direction = sortConfig.direction === 'asc' ? 1 : -1;
 
@@ -37,6 +54,12 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
     }
 
     // Sorting logic for weightData and gas
+    if (column === 'gas') {
+      const aGas = weightData[a] * (MB_TO_GAS / PROOF_SIZE_MB);
+      const bGas = weightData[b] * (MB_TO_GAS / PROOF_SIZE_MB);
+      return (aGas - bGas) * direction;
+    }
+
     const aWeight = weightData[a] ?? 0;
     const bWeight = weightData[b] ?? 0;
 
@@ -47,16 +70,16 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
   const calculateGas = (weight: number) => (weight * (MB_TO_GAS / PROOF_SIZE_MB)).toFixed(2);
 
   const requestSort = (column: SortColumn) => {
-    if (sortConfig && sortConfig.column === column) {
-      const newDirection = sortConfig.direction === 'desc' ? 'asc' : sortConfig.direction === 'asc' ? null : 'desc';
-      setSortConfig(newDirection ? { column, direction: newDirection } : null);
+    if (sortConfig.column === column) {
+      const newDirection = sortConfig.direction === 'desc' ? 'asc' : 'desc';
+      setSortConfig({ column, direction: newDirection });
     } else {
       setSortConfig({ column, direction: 'desc' });
     }
   };
 
   const renderSortIndicator = (column: SortColumn) => {
-    if (!sortConfig || sortConfig.column !== column || !sortConfig.direction) return null;
+    if (sortConfig.column !== column || !sortConfig.direction) return null;
     return sortConfig.direction === 'asc' ? '▲' : '▼';
   };
 
@@ -84,7 +107,7 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
       <tbody>
         {sortedChains.map((chain, index) => {
           const data = tpsData[chain];
-          const weight_mb = (weightData[chain] * PROOF_SIZE_MB) / BLOCK_TIME; // Convert percentage to kB/s
+          const weight_mb = (weightData[chain] * PROOF_SIZE_MB) / BLOCK_TIME; // Convert percentage to MB/s
           const weight_kb = weight_mb * MB_TO_KB;
           const gas = weight_mb > 0 ? calculateGas(weight_mb) : renderLoadingIcon(); // Correct Gas calculation
 
