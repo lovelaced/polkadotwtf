@@ -5,18 +5,41 @@ import { Footer } from './components/Footer';
 import { MetricsTotal } from './components/MetricsTotal';
 import { ChainTable } from './components/ChainTable';
 import './App.css';
-import { ChainName } from './types/chains';
-
-const chains: ChainName[] = ['Westend', 'Polkadot', 'Kusama', 'Paseo'];
+import { chainsConfig, paraIdToChainName, ChainName } from './types/chains';
+import useWeightConsumption from './hooks/useWeightConsumption';
+import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, GAS_TO_MGAS } from './constants';
 
 const App: React.FC = () => {
   const tpsData = useNatsConnection();
+  const consumptionData = useWeightConsumption('ws://localhost:9001');
 
-  const totalTps = chains.reduce((acc, chain) => acc + tpsData[chain].tps, 0);
+  // Get chain names dynamically from the config
+  const chainNames = Object.keys(chainsConfig) as ChainName[];
+
+  // Map weight data by para_id to chain names, defaulting to 0 if no data
+  const weightData: Record<ChainName, number> = chainNames.reduce((acc, chain) => {
+    const paraId = Object.keys(paraIdToChainName).find((key) => paraIdToChainName[Number(key)] === chain);
+    const chainData = consumptionData[Number(paraId)];
+    return {
+      ...acc,
+      [chain]: chainData ? chainData.total_proof_size : 0,
+    };
+  }, {} as Record<ChainName, number>);
+
+  const totalTps = chainNames.reduce((acc, chain) => acc + tpsData[chain].tps, 0);
+  const totalMbs = chainNames.reduce((acc, chain) => {
+    const chainMbs = (weightData[chain] * PROOF_SIZE_MB) / BLOCK_TIME;
+    return acc + chainMbs;
+  }, 0);
+  const totalMGas = totalMbs * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS);
+
+  const tpsRelay = tpsData.Polkadot.tps;
+  const weightRelay = weightData.Polkadot;
+  const gasRelay = weightRelay * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS);
+
   const formattedTotalTps = totalTps.toFixed(2);
-
-  const totalMbs = chains.reduce((acc, chain) => acc + tpsData[chain].kbps / 1024, 0); // Assuming KB/s
   const formattedTotalMbs = totalMbs.toFixed(2);
+  const formattedTotalGas = totalMGas.toFixed(2);
 
   return (
     <div className="app-container">
@@ -28,9 +51,9 @@ const App: React.FC = () => {
         </div>
 
         <div className="contentarea">
-          <MetricsTotal totalTps={formattedTotalTps} totalMbs={formattedTotalMbs} />
+          <MetricsTotal totalTps={formattedTotalTps} totalMbs={formattedTotalMbs} totalGas={formattedTotalGas} tpsRelay={tpsRelay} weightRelay={weightRelay} gasRelay={gasRelay}/>
           <div className="textbox">
-            <ChainTable tpsData={tpsData} chains={chains} />
+            <ChainTable tpsData={tpsData} weightData={weightData} chains={chainNames} />
           </div>
         </div>
         <div className="divider"></div>

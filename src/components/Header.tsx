@@ -13,6 +13,8 @@ export const Header = () => (
       <button className="dropdowntext">Polkadot</button>
       <div className="dropdowncontent">
         <a href="https://polkadot.com/developers" target="_blank" rel="noopener noreferrer">Build</a>
+        <a href="https://polkadot.subsquare.io/" target="_blank" rel="noopener noreferrer">Participate</a>
+        <a href="https://app.regionx.tech" target="_blank" rel="noopener noreferrer">Buy Blockspace</a>
       </div>
     </div>
     <div className="socialshare">
