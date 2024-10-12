@@ -11,7 +11,7 @@ interface MetricsTotalProps {
 
 const metricDescriptions: Record<string, string> = {
   tps: 'TPS refers to the number of extrinsics (transactions and other state changes) included in finalized blocks per second.',
-  gas: 'Polkadot has a two-dimensional gas system. One full block is 60M gas equivalent according to EVM production benchmarking.',
+  gas: 'Polkadot has a two-dimensional gas system. One full block is 60M gas equivalent according to EVM configuration on mainnet.',
   mbs: 'MB/s measures the size of the proof data submitted by rollups to the relay chain for validation.',
 };
 

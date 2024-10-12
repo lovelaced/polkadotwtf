@@ -12,7 +12,7 @@ type SortColumn = keyof ChainMetrics | 'chainName' | 'gas' | 'weight';
 
 export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, chains }) => {
   // Initialize sorting with gas, largest first (desc)
-  const [sortConfig, setSortConfig] = useState<{ column: SortColumn; direction: 'asc' | 'desc' }>({
+  const [sortConfig, setSortConfig] = useState<{ column: SortColumn | null; direction: 'asc' | 'desc' | null }>({
     column: 'gas',
     direction: 'desc',
   });
@@ -38,7 +38,9 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
     if (aFullyLoaded && !bFullyLoaded) return -1;
     if (!aFullyLoaded && bFullyLoaded) return 1;
 
-    // If both rows have the same loaded status, apply sorting based on user-selected column
+    // If no sorting is selected, return 0 (no sorting applied)
+    if (!sortConfig || !sortConfig.column || !sortConfig.direction) return 0;
+
     const column = sortConfig.column;
     const direction = sortConfig.direction === 'asc' ? 1 : -1;
 
@@ -69,15 +71,17 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
   // Calculate gas for each chain based on weightData (KB/s)
   const calculateGas = (weight: number) => (weight * (MB_TO_GAS / PROOF_SIZE_MB)).toFixed(2);
 
+  // Modified requestSort to handle third click (no sorting)
   const requestSort = (column: SortColumn) => {
     if (sortConfig.column === column) {
-      const newDirection = sortConfig.direction === 'desc' ? 'asc' : 'desc';
+      const newDirection = sortConfig.direction === 'desc' ? 'asc' : sortConfig.direction === 'asc' ? null : 'desc';
       setSortConfig({ column, direction: newDirection });
     } else {
       setSortConfig({ column, direction: 'desc' });
     }
   };
 
+  // Show the sorting indicator based on current sort configuration
   const renderSortIndicator = (column: SortColumn) => {
     if (sortConfig.column !== column || !sortConfig.direction) return null;
     return sortConfig.direction === 'asc' ? '▲' : '▼';

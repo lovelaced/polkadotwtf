@@ -29,48 +29,60 @@ body {
   font-family: 'DePixelKlein', sans-serif;
 }
 
+img {
+  image-rendering: pixelated;
+}
+
+
 /* Titlebar */
 .titlebar {
   background-color: white;
   border: 1px solid black;
   width: 100%;
-  height: 30px;
-  font-size: 18px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* space between left and right groups */
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+/* Left section (Logo and Dropdown) */
+.left-section {
+  display: flex;
+  align-items: center;
 }
 
 .logo {
   background-image: url('src/img/polkadot_32x32.png');
   background-size: contain;
   background-repeat: no-repeat;
-  margin-left: 30%;
-  margin-right: 40px;
-  margin-top: 3px;
+  padding-right: 12px;
+  margin-right: 14px;
+  margin-top: 4px;
   width: 22px;
   height: 22px;
-  float: left;
   border: none;
-  cursor: pointer;
   outline: none;
-  text-decoration: none;
+  cursor: pointer;
 }
 
 /* Dropdown */
 .dropdown {
   position: relative;
   font-family: 'Chicago Plain';
-  float: left;
+  margin-left: 10px;
 }
 
 .dropdowntext {
-  font-size: 1rem;
+  font-size: 20px;
   background-color: transparent;
   border: none;
-  cursor: pointer;
   outline: none;
   font-family: 'Chicago Plain';
-  float: left;
-  margin-top: 4px;
-  margin-right: 0px;
+  padding: 0.3rem;
+  padding-right: 24px;
+  padding-bottom: 0.3rem;
 }
 
 .dropdowncontent {
@@ -78,20 +90,21 @@ body {
   position: absolute;
   background-color: white;
   border: 1px solid black;
-  min-width: 250px;
-  margin-top: 0px;
+  min-width: 300px;
+  margin-top: 1px;
   border: 1px outset black;
+  font-size: 20px;
   top: 100%;
   left: 0;
-  padding: 3px;
+  padding: 5px;
+  padding-top: 2px;
   padding-bottom: 15px;
   z-index: 1;
 }
 
 .dropdowncontent a {
-  float: none;
   display: block;
-  padding: 0px 2px;
+  padding: 2px;
   color: black;
   text-decoration: none;
 }
@@ -105,21 +118,35 @@ body {
   display: block;
 }
 
-/* Social Media Icons */
+/* Right section (Clock and Twitter) */
+.right-section {
+  display: flex;
+  align-items: center;
+}
+
 .socialshare {
-  float: right;
-  margin-right: 3%;
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
 
 .twitter {
   background-size: contain;
   background-repeat: no-repeat;
-  margin-left: 99%;
   width: 25px;
   height: 25px;
   background-image: url('src/img/twitter.png');
+  cursor: pointer;
 }
+
+.clock {
+  font-size: 18px;
+  font-family: 'Chicago Plain', sans-serif;
+  color: black;
+  padding-left: 10px;
+}
+
+
 
 .divider {
   height: 40px;
@@ -265,7 +292,7 @@ tr:hover td {
   cursor: pointer;
   transition: all 0.1s ease-in-out;
   text-align: center;
-  box-shadow: inset 1px 1px #ffffff, inset -1px -1px #8a8a8a;
+  box-shadow: inset 2px 2px #ffffff, inset -2px -2px #8a8a8a;
 }
 
 .metric-button span {
@@ -279,7 +306,7 @@ tr:hover td {
   border-left-color: #8a8a8a;
   border-right-color: #ffffff;
   border-bottom-color: #ffffff;
-  box-shadow: inset 1px 1px 1px #8a8a8a, inset -1px -1px 1px #ffffff;
+  box-shadow: inset 2px 2px 2px #8a8a8a, inset -2px -2px 2px #ffffff;
 }
 
 .multiplier {
@@ -307,6 +334,16 @@ tr:hover td {
     display: flex;
     align-items: center;
     width: 100%;
+  }
+  .logo {
+    margin-top: 6px;
+  }
+  .dropdowntext {
+    font-size: 18px;
+    margin-top: 2px;
+  }
+  .twitter {
+    margin-top: 0px;
   }
 
   .windowtitle, .contentarea {

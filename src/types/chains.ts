@@ -6,9 +6,9 @@ export type ChainName = keyof typeof chainsConfig;
 // Create a central configuration object for chains
 export const chainsConfig = {
   Polkadot: { paraId: 2034, displayName: 'Polkadot' },
-  Westend: { paraId: 2000, displayName: 'Westend' },
-  Kusama: { paraId: 2006, displayName: 'Kusama' },
-  Paseo: { paraId: 2048, displayName: 'Paseo' },
+  Acala: { paraId: 2000, displayName: 'Acala' },
+  Moonbeam: { paraId: 2006, displayName: 'Moonbeam' },
+  Hydration: { paraId: 2048, displayName: 'Hydration' },
 } as const;
 
 // Extract the chain names automatically from the config

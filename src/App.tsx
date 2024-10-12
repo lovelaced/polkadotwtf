@@ -11,7 +11,7 @@ import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, GAS_TO_MGAS } from './constants';
 
 const App: React.FC = () => {
   const tpsData = useNatsConnection();
-  const consumptionData = useWeightConsumption('ws://localhost:9001');
+  const consumptionData = useWeightConsumption('ws://192.168.1.232:9001');
 
   // Get chain names dynamically from the config
   const chainNames = Object.keys(chainsConfig) as ChainName[];
