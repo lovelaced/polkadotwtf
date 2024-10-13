@@ -1,13 +1,13 @@
 @font-face {
   font-family: "DePixelKlein";
-  src: url('src/assets/DePixelKlein.ttf') format("truetype");
+  src: url('/src/assets/DePixelKlein.ttf') format("truetype");
 }
 
 @font-face {
   font-family: 'Chicago Plain';
   font-style: normal;
   font-weight: normal;
-  src: url('src/assets/Chicago.woff') format('woff');
+  src: url('/src/assets/Chicago.woff') format('woff');
 }
 
 /* General Reset */
@@ -19,7 +19,7 @@
 
 /* Body Styles */
 body {
-  background-image: url('src/img/background.png');
+  background-image: url('/src/img/background.png');
   background-repeat: repeat;
   min-height: 100vh;
   margin: 0;
@@ -54,7 +54,7 @@ img {
 }
 
 .logo {
-  background-image: url('src/img/polkadot_32x32.png');
+  background-image: url('/src/img/polkadot_32x32.png');
   background-size: contain;
   background-repeat: no-repeat;
   padding-right: 12px;
@@ -135,7 +135,7 @@ img {
   background-repeat: no-repeat;
   width: 25px;
   height: 25px;
-  background-image: url('src/img/twitter.png');
+  background-image: url('/src/img/twitter.png');
   cursor: pointer;
 }
 
@@ -158,9 +158,9 @@ img {
   margin: auto;
   border: 1px outset black;
   
-  background: url('src/img/windowborderleft.png') no-repeat left bottom,
-              url('src/img/windowborderright.png') no-repeat right bottom,
-              url('src/img/windowbordercenter.png') no-repeat center bottom, #fff;
+  background: url('/src/img/windowborderleft.png') no-repeat left bottom,
+              url('/src/img/windowborderright.png') no-repeat right bottom,
+              url('/src/img/windowbordercenter.png') no-repeat center bottom, #fff;
   
   background-position: 
       0 bottom, 
@@ -463,7 +463,7 @@ tr:hover td {
   }
 
   .textbox {
-    padding: 0px 2px 0px 2px;
+    padding: 0px 2px 20px 2px;
     margin-left: 5px;
     margin-right: 5px;
   }
