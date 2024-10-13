@@ -11,36 +11,6 @@ permissions:
   id-token: write
 
 jobs:
-  pre-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '21'
-
-      - name: Fetch Kusama and Polkadot TS files
-        run: |
-          curl -o scripts/productionRelayKusama.ts https://raw.githubusercontent.com/polkadot-js/apps/master/packages/apps-config/src/endpoints/productionRelayKusama.ts
-          curl -o scripts/productionRelayPolkadot.ts https://raw.githubusercontent.com/polkadot-js/apps/master/packages/apps-config/src/endpoints/productionRelayPolkadot.ts
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Generate registry.json
-        run: node scripts/generate-registry.js
-
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Action"
-          git add registry.json
-          git commit -m "Update registry.json"
-          git push
-
   build:
     runs-on: ubuntu-latest
 
