@@ -2,7 +2,7 @@ import React from 'react';
 
 interface RelaySelectorProps {
   selectedRelay: string;
-  onRelayChange: (relay: string) => void;
+  onRelayChange: (relay: 'Polkadot' | 'Kusama') => void;
 }
 
 export const RelaySelector: React.FC<RelaySelectorProps> = ({ selectedRelay, onRelayChange }) => {

@@ -1,5 +1,22 @@
 // Move type definitions here, avoid importing anything from chainsConfig here
-
+// Define the shape of the data you're receiving (e.g., WeightConsumption)
+export type ConsumptionUpdate = {
+    para_id: number;
+    relay: string;
+    block_number: number;
+    extrinsics_num: number;
+    ref_time: {
+      normal: number;
+      operational: number;
+      mandatory: number;
+    };
+    proof_size: {
+      normal: number;
+      operational: number;
+      mandatory: number;
+    };
+    total_proof_size: number;
+  }
 // ChainMetrics definition (unchanged)
 export type ChainMetrics = {
     tps: number;

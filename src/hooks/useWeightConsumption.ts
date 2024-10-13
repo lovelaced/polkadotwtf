@@ -1,21 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { ConsumptionUpdate } from '../types/types';
 
-// Define the shape of the data you're receiving (e.g., WeightConsumption)
-interface ConsumptionUpdate {
-  para_id: number;
-  relay: string;
-  ref_time: {
-    normal: number;
-    operational: number;
-    mandatory: number;
-  };
-  proof_size: {
-    normal: number;
-    operational: number;
-    mandatory: number;
-  };
-  total_proof_size: number;
-}
 
 // Custom hook to subscribe to WebSocket and return data for all para_ids
 export const useWeightConsumption = (url: string, retryInterval = 5000) => {
