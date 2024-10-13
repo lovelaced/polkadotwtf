@@ -6,7 +6,7 @@ import { ConsumptionUpdate } from '../types/types';
 export const useWeightConsumption = (url: string, retryInterval = 5000) => {
   const [data, setData] = useState<Record<number, ConsumptionUpdate>>({}); // Store data for all para_ids
   const websocketRef = useRef<WebSocket | null>(null);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null); // Use ReturnType instead of NodeJS.Timeout
   const isConnecting = useRef(false); // Track WebSocket connection state
 
   const connectWebSocket = () => {
