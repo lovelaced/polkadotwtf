@@ -403,6 +403,11 @@ tr:hover td {
     width: 95%;
   }
 
+  .relay-selector {
+    margin-top: 15px;
+    margin-bottom: 5px;
+  }
+
   .chain-table {
     font-size: 0.7rem; /* Smaller font size for better fit */
     padding: 1px;
@@ -422,6 +427,11 @@ tr:hover td {
   .loading-bar-container {
     width: 30px; /* Even smaller loading bar for mobile */
     height: 8px;
+  }
+
+  .metrics-total-container {
+    width: 95%;
+    margin: 0px auto;
   }
 
   .metrics-total {

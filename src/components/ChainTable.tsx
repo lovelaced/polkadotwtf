@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PolkadotChainName, KusamaChainName, polkadotParaIdToChainName, kusamaParaIdToChainName } from '../types/chains';
 import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, MB_TO_KB, GAS_TO_MGAS } from '../constants';
 
 interface ChainTableProps {
-  consumptionData: Record<number, { block_number: number, extrinsics_num: number, total_proof_size: number }>;
+  consumptionData: Record<number, { block_number: number; extrinsics_num: number; total_proof_size: number }>;
   weightData: Record<PolkadotChainName | KusamaChainName, number>;
   chains: (PolkadotChainName | KusamaChainName)[];
 }
@@ -16,52 +16,73 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
     direction: 'desc',
   });
 
+  const [lastKnownData, setLastKnownData] = useState<
+    Record<PolkadotChainName | KusamaChainName, { block_number: number; extrinsics_num: number; gas: string; weight_kb: string }>
+  >({});
+
   const renderLoadingIcon = () => (
     <div className="loading-bar-container">
       <div className="loading-bar"></div>
     </div>
   );
 
-  const isFullyLoaded = (chain: PolkadotChainName | KusamaChainName) => {
-    const paraId = Object.keys(polkadotParaIdToChainName).find(key => polkadotParaIdToChainName[Number(key)] === chain)
-      || Object.keys(kusamaParaIdToChainName).find(key => kusamaParaIdToChainName[Number(key)] === chain);
-    const data = consumptionData[Number(paraId)];
-    return data?.block_number > 0 && data?.extrinsics_num > 0 && weightData[chain] > 0;
+  const updateLastKnownData = (chain: PolkadotChainName | KusamaChainName, data: any) => {
+    setLastKnownData((prevData) => ({
+      ...prevData,
+      [chain]: {
+        block_number: data.block_number ?? prevData[chain]?.block_number ?? 0,
+        extrinsics_num: data.extrinsics_num ?? prevData[chain]?.extrinsics_num ?? 0,
+        gas: data.gas ?? prevData[chain]?.gas ?? renderLoadingIcon(),
+        weight_kb: data.weight_kb ?? prevData[chain]?.weight_kb ?? renderLoadingIcon(),
+      },
+    }));
   };
 
   const calculateGas = (weight: number) => (weight * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS)).toFixed(2);
 
+  useEffect(() => {
+    // Update last known data every time new consumption data comes in
+    chains.forEach((chain) => {
+      const paraId =
+        Object.keys(polkadotParaIdToChainName).find((key) => polkadotParaIdToChainName[Number(key)] === chain) ||
+        Object.keys(kusamaParaIdToChainName).find((key) => kusamaParaIdToChainName[Number(key)] === chain);
+
+      if (paraId) {
+        const data = consumptionData[Number(paraId)];
+        const weight_mb = weightData[chain] ? (weightData[chain] * PROOF_SIZE_MB) / BLOCK_TIME : null;
+        const weight_kb = weight_mb ? weight_mb * MB_TO_KB : null;
+        const gas = weight_mb ? calculateGas(weight_mb) : null;
+
+        updateLastKnownData(chain, {
+          block_number: data?.block_number || null,
+          extrinsics_num: data?.extrinsics_num || null,
+          gas: gas || null,
+          weight_kb: weight_kb?.toFixed(2) || null,
+        });
+      }
+    });
+  }, [consumptionData, weightData, chains]);
+
   const sortedChains = [...chains].sort((a, b) => {
-    const aFullyLoaded = isFullyLoaded(a);
-    const bFullyLoaded = isFullyLoaded(b);
-
-    if (aFullyLoaded && !bFullyLoaded) return -1;
-    if (!aFullyLoaded && bFullyLoaded) return 1;
-
-    if (!sortConfig.column || !sortConfig.direction) return 0;
-
     const column = sortConfig.column;
     const direction = sortConfig.direction === 'asc' ? 1 : -1;
 
-    const paraIdA = Object.keys(polkadotParaIdToChainName).find(key => polkadotParaIdToChainName[Number(key)] === a)
-      || Object.keys(kusamaParaIdToChainName).find(key => kusamaParaIdToChainName[Number(key)] === a);
-    const paraIdB = Object.keys(polkadotParaIdToChainName).find(key => polkadotParaIdToChainName[Number(key)] === b)
-      || Object.keys(kusamaParaIdToChainName).find(key => kusamaParaIdToChainName[Number(key)] === b);
+    if (!sortConfig.column || !sortConfig.direction) return 0;
 
     if (column === 'block_number' || column === 'extrinsics_num') {
-      const aValue = consumptionData[Number(paraIdA)]?.[column];
-      const bValue = consumptionData[Number(paraIdB)]?.[column];
+      const aValue = lastKnownData[a]?.[column] || 0;
+      const bValue = lastKnownData[b]?.[column] || 0;
       return (aValue - bValue) * direction;
     }
 
     if (column === 'gas') {
-      const aGas = weightData[a] * (MB_TO_GAS / PROOF_SIZE_MB);
-      const bGas = weightData[b] * (MB_TO_GAS / PROOF_SIZE_MB);
+      const aGas = parseFloat(lastKnownData[a]?.gas || '0');
+      const bGas = parseFloat(lastKnownData[b]?.gas || '0');
       return (aGas - bGas) * direction;
     }
 
-    const aWeight = weightData[a] ?? 0;
-    const bWeight = weightData[b] ?? 0;
+    const aWeight = parseFloat(lastKnownData[a]?.weight_kb || '0');
+    const bWeight = parseFloat(lastKnownData[b]?.weight_kb || '0');
     return (aWeight - bWeight) * direction;
   });
 
@@ -102,22 +123,15 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
       </thead>
       <tbody>
         {sortedChains.map((chain, index) => {
-          const paraId = Object.keys(polkadotParaIdToChainName).find(key => polkadotParaIdToChainName[Number(key)] === chain)
-            || Object.keys(kusamaParaIdToChainName).find(key => kusamaParaIdToChainName[Number(key)] === chain);
-          const data = consumptionData[Number(paraId)];
-          if (!data) return null;
-
-          const weight_mb = (weightData[chain] * PROOF_SIZE_MB) / BLOCK_TIME;
-          const weight_kb = weight_mb * MB_TO_KB;
-          const gas = weight_mb > 0 ? calculateGas(weight_mb) : renderLoadingIcon();
+          const lastData = lastKnownData[chain] || {};
 
           return (
-            <tr key={index} className={chain === 'Polkadot' ? 'polkadot-highlight' : ''}>
+            <tr key={index} className={chain === 'Polkadot' || chain === 'Kusama' ? 'polkadot-highlight' : ''}>
               <td>{chain}</td>
-              <td>{data?.block_number || renderLoadingIcon()}</td>
-              <td>{data?.extrinsics_num ? (data.extrinsics_num / BLOCK_TIME).toFixed(2) : renderLoadingIcon()}</td>
-              <td>{typeof gas === 'string' ? gas : renderLoadingIcon()}</td>
-              <td>{weight_kb > 0 ? weight_kb.toFixed(2) : renderLoadingIcon()}</td>
+              <td>{lastData.block_number || renderLoadingIcon()}</td>
+              <td>{lastData.extrinsics_num ? (lastData.extrinsics_num / BLOCK_TIME).toFixed(2) : renderLoadingIcon()}</td>
+              <td>{lastData.gas || renderLoadingIcon()}</td>
+              <td>{lastData.weight_kb || renderLoadingIcon()}</td>
             </tr>
           );
         })}

@@ -30,7 +30,7 @@ export const Header = () => {
         <div className="dropdown">
           <button className="dropdowntext">File</button>
           <div className="dropdowncontent">
-            <a href="https://polkadot.com/developers" target="_blank" rel="noopener noreferrer">
+            <a href="https://dotcodeschool.com" target="_blank" rel="noopener noreferrer">
               Build
             </a>
             <a href="https://polkadot.subsquare.io/" target="_blank" rel="noopener noreferrer">
