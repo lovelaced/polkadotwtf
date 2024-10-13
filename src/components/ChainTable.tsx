@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
-import { PolkadotChainName, KusamaChainName, ChainMetrics } from '../types/chains';
+import { PolkadotChainName, KusamaChainName, polkadotParaIdToChainName, kusamaParaIdToChainName } from '../types/chains';
 import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, MB_TO_KB, GAS_TO_MGAS } from '../constants';
 
 interface ChainTableProps {
-  tpsData: Record<PolkadotChainName | KusamaChainName, ChainMetrics>;
+  consumptionData: Record<number, { block_number: number, extrinsics_num: number, total_proof_size: number }>;
   weightData: Record<PolkadotChainName | KusamaChainName, number>;
   chains: (PolkadotChainName | KusamaChainName)[];
 }
 
-type SortColumn = keyof ChainMetrics | 'chainName' | 'gas' | 'weight';
+type SortColumn = 'chainName' | 'block_number' | 'extrinsics_num' | 'gas' | 'weight';
 
-export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, chains }) => {
-  // The rest of the component stays the same, using both Polkadot and Kusama chain names
+export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightData, chains }) => {
   const [sortConfig, setSortConfig] = useState<{ column: SortColumn | null; direction: 'asc' | 'desc' | null }>({
-    column: 'gas',
+    column: 'extrinsics_num', // Set TPS (extrinsics_num) as default sort column
     direction: 'desc',
   });
-
-  // log the weightData
-    console.log(weightData);
 
   const renderLoadingIcon = () => (
     <div className="loading-bar-container">
@@ -26,39 +22,36 @@ export const ChainTable: React.FC<ChainTableProps> = ({ tpsData, weightData, cha
     </div>
   );
 
-// Function to check if the row has fully loaded data
-const isFullyLoaded = (chain: PolkadotChainName | KusamaChainName) => {
-    const data = tpsData[chain];
-    return data?.block > 0 && data?.tps > 0 && weightData[chain] > 0;
+  const isFullyLoaded = (chain: PolkadotChainName | KusamaChainName) => {
+    const paraId = Object.keys(polkadotParaIdToChainName).find(key => polkadotParaIdToChainName[Number(key)] === chain)
+      || Object.keys(kusamaParaIdToChainName).find(key => kusamaParaIdToChainName[Number(key)] === chain);
+    const data = consumptionData[Number(paraId)];
+    return data?.block_number > 0 && data?.extrinsics_num > 0 && weightData[chain] > 0;
   };
-  
 
-  // Calculate gas for each chain based on weightData (KB/s)
   const calculateGas = (weight: number) => (weight * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS)).toFixed(2);
 
-  // Sort chains based on fully loaded status and selected sort configuration
   const sortedChains = [...chains].sort((a, b) => {
     const aFullyLoaded = isFullyLoaded(a);
     const bFullyLoaded = isFullyLoaded(b);
 
-    // Prioritize fully loaded rows
     if (aFullyLoaded && !bFullyLoaded) return -1;
     if (!aFullyLoaded && bFullyLoaded) return 1;
 
-    // If no sorting is selected, return 0 (no sorting applied)
     if (!sortConfig.column || !sortConfig.direction) return 0;
 
     const column = sortConfig.column;
     const direction = sortConfig.direction === 'asc' ? 1 : -1;
 
-    if (column === 'chainName') {
-      return a.localeCompare(b) * direction;
-    }
+    const paraIdA = Object.keys(polkadotParaIdToChainName).find(key => polkadotParaIdToChainName[Number(key)] === a)
+      || Object.keys(kusamaParaIdToChainName).find(key => kusamaParaIdToChainName[Number(key)] === a);
+    const paraIdB = Object.keys(polkadotParaIdToChainName).find(key => polkadotParaIdToChainName[Number(key)] === b)
+      || Object.keys(kusamaParaIdToChainName).find(key => kusamaParaIdToChainName[Number(key)] === b);
 
-    if (column !== 'weight' && column !== 'gas') {
-      const aValue = tpsData[a][column as keyof ChainMetrics];
-      const bValue = tpsData[b][column as keyof ChainMetrics];
-      return ((aValue as number) - (bValue as number)) * direction;
+    if (column === 'block_number' || column === 'extrinsics_num') {
+      const aValue = consumptionData[Number(paraIdA)]?.[column];
+      const bValue = consumptionData[Number(paraIdB)]?.[column];
+      return (aValue - bValue) * direction;
     }
 
     if (column === 'gas') {
@@ -93,11 +86,11 @@ const isFullyLoaded = (chain: PolkadotChainName | KusamaChainName) => {
           <th onClick={() => requestSort('chainName')} className="sortable">
             Chain {renderSortIndicator('chainName')}
           </th>
-          <th onClick={() => requestSort('block')} className="sortable">
-            Block {renderSortIndicator('block')}
+          <th onClick={() => requestSort('block_number')} className="sortable">
+            Block {renderSortIndicator('block_number')}
           </th>
-          <th onClick={() => requestSort('tps')} className="sortable">
-            TPS {renderSortIndicator('tps')}
+          <th onClick={() => requestSort('extrinsics_num')} className="sortable">
+            TPS {renderSortIndicator('extrinsics_num')}
           </th>
           <th onClick={() => requestSort('gas')} className="sortable">
             MGas/s {renderSortIndicator('gas')}
@@ -109,16 +102,20 @@ const isFullyLoaded = (chain: PolkadotChainName | KusamaChainName) => {
       </thead>
       <tbody>
         {sortedChains.map((chain, index) => {
-          const data = tpsData[chain];
-          const weight_mb = (weightData[chain] * PROOF_SIZE_MB) / BLOCK_TIME; // Convert percentage to MB/s
+          const paraId = Object.keys(polkadotParaIdToChainName).find(key => polkadotParaIdToChainName[Number(key)] === chain)
+            || Object.keys(kusamaParaIdToChainName).find(key => kusamaParaIdToChainName[Number(key)] === chain);
+          const data = consumptionData[Number(paraId)];
+          if (!data) return null;
+
+          const weight_mb = (weightData[chain] * PROOF_SIZE_MB) / BLOCK_TIME;
           const weight_kb = weight_mb * MB_TO_KB;
-          const gas = weight_mb > 0 ? calculateGas(weight_mb) : renderLoadingIcon(); // Correct Gas calculation
+          const gas = weight_mb > 0 ? calculateGas(weight_mb) : renderLoadingIcon();
 
           return (
             <tr key={index} className={chain === 'Polkadot' ? 'polkadot-highlight' : ''}>
               <td>{chain}</td>
-              <td>{data?.block > 0 ? data.block : renderLoadingIcon()}</td>
-              <td>{data?.tps > 0 ? data.tps.toFixed(2) : renderLoadingIcon()}</td>
+              <td>{data?.block_number || renderLoadingIcon()}</td>
+              <td>{data?.extrinsics_num ? (data.extrinsics_num / BLOCK_TIME).toFixed(2) : renderLoadingIcon()}</td>
               <td>{typeof gas === 'string' ? gas : renderLoadingIcon()}</td>
               <td>{weight_kb > 0 ? weight_kb.toFixed(2) : renderLoadingIcon()}</td>
             </tr>

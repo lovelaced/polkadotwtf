@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNatsConnection } from './hooks/useNatsConnection';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { MetricsTotal } from './components/MetricsTotal';
@@ -20,52 +19,55 @@ import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, GAS_TO_MGAS } from './constants';
 const App: React.FC = () => {
   const [selectedRelay, setSelectedRelay] = useState<'Polkadot' | 'Kusama'>('Polkadot'); // Relay selector
 
-  const tpsData = useNatsConnection(selectedRelay);
   const consumptionData = useWeightConsumption('ws://192.168.1.232:9001');
 
   // Select the chain names and mappings based on the selected relay
   const chainNames = selectedRelay === 'Polkadot' ? polkadotChainNames : kusamaChainNames;
   const paraIdToChainName = selectedRelay === 'Polkadot' ? polkadotParaIdToChainName : kusamaParaIdToChainName;
 
+  // Map over chainNames to calculate TPS and weight data
   const weightData: Record<PolkadotChainName | KusamaChainName, number> = chainNames.reduce((acc, chain) => {
-    // Get the paraId from the mapping
     const paraId = Object.keys(paraIdToChainName).find(key => paraIdToChainName[Number(key)] === chain);
-
     if (paraId) {
-      // Find the corresponding chain data using para_id
       const chainData = consumptionData[Number(paraId)];
-
-      // Only process chains that match the selected relay (Polkadot or Kusama)
       if (chainData?.relay === selectedRelay) {
-        // Safely retrieve proof size, falling back to 0 if not present
         const proofSize = chainData?.ref_time?.mandatory ?? chainData?.total_proof_size ?? 0;
-
-        return {
-          ...acc,
-          [chain]: proofSize,
-        };
+        return { ...acc, [chain]: proofSize };
       }
     }
-
-    // Return the accumulator unchanged if no data is available
     return acc;
   }, {} as Record<PolkadotChainName | KusamaChainName, number>);
 
-  // Calculate total TPS, MB/s, and Gas using the weightData
-  const totalTps = chainNames.reduce((acc, chain) => acc + (tpsData[chain]?.tps || 0), 0);
-  const totalMbs = chainNames.reduce((acc, chain) => {
-    const chainMbs = (weightData[chain] || 0) * PROOF_SIZE_MB / BLOCK_TIME;
-    if (Number.isNaN(chainMbs)) {
-      return acc;
+  // Calculate total TPS using extrinsics_num from consumptionData
+  const totalTps = chainNames.reduce((acc, chain) => {
+    const paraId = Object.keys(paraIdToChainName).find(key => paraIdToChainName[Number(key)] === chain);
+    const chainData = consumptionData[Number(paraId)];
+    if (chainData?.relay === selectedRelay && chainData?.extrinsics_num) {
+      const tps = chainData.extrinsics_num / BLOCK_TIME;
+      return acc + tps;
     }
-    return acc + chainMbs;
+    return acc;
   }, 0);
 
+  // Calculate total MB/s using weightData
+  const totalMbs = chainNames.reduce((acc, chain) => {
+    const chainMbs = (weightData[chain] || 0) * PROOF_SIZE_MB / BLOCK_TIME;
+    if (!Number.isNaN(chainMbs)) {
+      return acc + chainMbs;
+    }
+    return acc;
+  }, 0);
+
+  // Calculate total MGas
   const totalMGas = totalMbs * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS);
 
-  // Retrieve metrics for the selected relay
-  const tpsRelay = tpsData[selectedRelay]?.tps || 0;
-  const weightRelay = weightData[selectedRelay] || 0;
+  // Calculate TPS for the relay chain only (Polkadot or Kusama)
+  const relayChainName = selectedRelay === 'Polkadot' ? 'Polkadot' : 'Kusama';
+  const relayParaId = Object.keys(paraIdToChainName).find(key => paraIdToChainName[Number(key)] === relayChainName);
+  const relayChainData = relayParaId ? consumptionData[Number(relayParaId)] : null;
+  const tpsRelay = relayChainData?.extrinsics_num ? (relayChainData.extrinsics_num / BLOCK_TIME) : 0;
+
+  const weightRelay = weightData[relayChainName] || 0;
   const gasRelay = weightRelay * PROOF_SIZE_MB / BLOCK_TIME * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS);
 
   const formattedTotalTps = totalTps.toFixed(2);
@@ -82,10 +84,7 @@ const App: React.FC = () => {
         </div>
 
         <div className="contentarea">
-          <RelaySelector
-            selectedRelay={selectedRelay}
-            onRelayChange={setSelectedRelay}
-          />
+          <RelaySelector selectedRelay={selectedRelay} onRelayChange={setSelectedRelay} />
 
           <MetricsTotal
             totalTps={formattedTotalTps}
@@ -97,7 +96,7 @@ const App: React.FC = () => {
           />
 
           <div className="textbox">
-            <ChainTable tpsData={tpsData} weightData={weightData} chains={chainNames} />
+            <ChainTable consumptionData={consumptionData} weightData={weightData} chains={chainNames} />
           </div>
         </div>
         <div className="divider"></div>
