@@ -5,6 +5,7 @@ export type ConsumptionUpdate = {
     relay: string;
     block_number: number;
     extrinsics_num: number;
+    authorities_num: number;
     ref_time: {
       normal: number;
       operational: number;

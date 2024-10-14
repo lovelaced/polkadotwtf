@@ -19,7 +19,7 @@ import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, GAS_TO_MGAS } from './constants';
 const App: React.FC = () => {
   const [selectedRelay, setSelectedRelay] = useState<'Polkadot' | 'Kusama'>('Polkadot'); // Relay selector
 
-  const consumptionData = useWeightConsumption('http://192.168.1.232:9001/events');
+  const consumptionData = useWeightConsumption('https://stream.freeside.network/events');
 
   // Select the chain names and mappings based on the selected relay
   const chainNames = selectedRelay === 'Polkadot' ? polkadotChainNames : kusamaChainNames;

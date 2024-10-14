@@ -3,12 +3,12 @@ import { PolkadotChainName, KusamaChainName, polkadotParaIdToChainName, kusamaPa
 import { BLOCK_TIME, PROOF_SIZE_MB, MB_TO_GAS, MB_TO_KB, GAS_TO_MGAS } from '../constants';
 
 interface ChainTableProps {
-    consumptionData: Record<number, { block_number: number; extrinsics_num: number; total_proof_size: number }>;
+    consumptionData: Record<number, { block_number: number; extrinsics_num: number; total_proof_size: number; authorities_num: number }>;
     weightData: Record<PolkadotChainName | KusamaChainName, number>;
     chains: (PolkadotChainName | KusamaChainName)[];
 }
 
-type SortColumn = 'chainName' | 'block_number' | 'extrinsics_num' | 'gas' | 'weight';
+type SortColumn = 'chainName' | 'block_number' | 'extrinsics_num' | 'gas' | 'weight' | 'authorities_num';
 
 export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightData, chains }) => {
     const [sortConfig, setSortConfig] = useState<{ column: SortColumn | null; direction: 'asc' | 'desc' | null }>({
@@ -17,7 +17,7 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
     });
 
     const [lastKnownData, setLastKnownData] = useState<
-        Record<PolkadotChainName | KusamaChainName, { block_number: number; extrinsics_num: number; gas: string; weight_kb: string }>
+        Record<PolkadotChainName | KusamaChainName, { block_number: number; extrinsics_num: number; gas: string; weight_kb: string; authorities_num: number }>
     >({});
 
     const renderLoadingIcon = () => (
@@ -34,6 +34,9 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
                 extrinsics_num: data.extrinsics_num ?? prevData[chain]?.extrinsics_num ?? 0,
                 gas: data.gas ?? prevData[chain]?.gas ?? renderLoadingIcon(),
                 weight_kb: data.weight_kb ?? prevData[chain]?.weight_kb ?? renderLoadingIcon(),
+                authorities_num: typeof data.authorities_num === 'number'
+                ? (data.authorities_num === 0 ? '?' : data.authorities_num)
+                : prevData[chain]?.authorities_num ?? renderLoadingIcon(),
             },
         }));
     };
@@ -58,6 +61,7 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
                     extrinsics_num: data?.extrinsics_num || null,
                     gas: gas || null,
                     weight_kb: weight_kb?.toFixed(2) || null,
+                    authorities_num: data?.authorities_num || null,
                 });
             }
         });
@@ -67,8 +71,8 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
         const aData = lastKnownData[a];
         const bData = lastKnownData[b];
         // Check if both chains have fully loaded data
-        const aFullyLoaded = aData?.block_number && aData?.extrinsics_num && aData?.gas && aData?.weight_kb;
-        const bFullyLoaded = bData?.block_number && bData?.extrinsics_num && bData?.gas && bData?.weight_kb;
+        const aFullyLoaded = aData?.block_number && aData?.extrinsics_num && aData?.gas && aData?.weight_kb && aData?.authorities_num;
+        const bFullyLoaded = bData?.block_number && bData?.extrinsics_num && bData?.gas && bData?.weight_kb && bData?.authorities_num;
 
         // Always prioritize fully loaded rows over partially loaded rows
         if (aFullyLoaded && !bFullyLoaded) return -1;
@@ -80,9 +84,7 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
         const column = sortConfig.column;
         const direction = sortConfig.direction === 'asc' ? 1 : -1;
 
-        if (!sortConfig.column || !sortConfig.direction) return 0;
-
-        if (column === 'block_number' || column === 'extrinsics_num') {
+        if (column === 'block_number' || column === 'extrinsics_num' || column === 'authorities_num') {
             const aValue = lastKnownData[a]?.[column] || 0;
             const bValue = lastKnownData[b]?.[column] || 0;
             return (aValue - bValue) * direction;
@@ -132,6 +134,9 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
                     <th onClick={() => requestSort('weight')} className="sortable">
                         KB/s {renderSortIndicator('weight')}
                     </th>
+                    <th onClick={() => requestSort('authorities_num')} className="sortable">
+                        Sequencers {renderSortIndicator('authorities_num')}
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -139,12 +144,18 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
                     const lastData = lastKnownData[chain] || {};
 
                     return (
-                        <tr key={index} className={chain === 'Polkadot' || chain === 'Kusama' ? 'polkadot-highlight' : ''}>
+                        <tr key={index} className={chain === 'Polkadot' || chain === 'Kusama' || chain === 'AssetHub' ? 'polkadot-highlight' : ''}>
                             <td>{chain}</td>
                             <td>{lastData.block_number || renderLoadingIcon()}</td>
                             <td>{lastData.extrinsics_num ? (lastData.extrinsics_num / BLOCK_TIME).toFixed(2) : renderLoadingIcon()}</td>
                             <td>{lastData.gas || renderLoadingIcon()}</td>
                             <td>{lastData.weight_kb || renderLoadingIcon()}</td>
+                            <td>{typeof lastData.authorities_num === 'string'
+                        ? lastData.authorities_num // Show "?" if authorities_num is "?"
+                        : lastData.authorities_num !== undefined
+                        ? lastData.authorities_num // Show the number if available
+                        : renderLoadingIcon()}
+                </td>
                         </tr>
                     );
                 })}

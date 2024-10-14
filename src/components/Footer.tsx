@@ -7,7 +7,7 @@ export const Footer = () => (
       <a href="#">Add Chain</a>
     </div>
     <div className="footer-button">
-      <a href="#">Source Code</a>
+      <a href="https://github.com/lovelaced/polkadotwtf">Source Code</a>
     </div>
     <div className="footer-text">polkadot.wtf - built with ❤</div>
   </div>
