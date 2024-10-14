@@ -1,82 +1,46 @@
 import { useState, useEffect, useRef } from 'react';
 import { ConsumptionUpdate } from '../types/types';
 
-
-// Custom hook to subscribe to WebSocket and return data for all para_ids
-export const useWeightConsumption = (url: string, retryInterval = 5000) => {
+// Custom hook to subscribe to SSE and return data for all para_ids
+export const useWeightConsumption = (url: string) => {
   const [data, setData] = useState<Record<number, ConsumptionUpdate>>({}); // Store data for all para_ids
-  const websocketRef = useRef<WebSocket | null>(null);
-  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null); // Use ReturnType instead of NodeJS.Timeout
-  const isConnecting = useRef(false); // Track WebSocket connection state
+  const eventSourceRef = useRef<EventSource | null>(null);
 
-  const connectWebSocket = () => {
-    if (isConnecting.current) return; // Prevent multiple connection attempts
-    console.log('Attempting to connect to WebSocket...');
-    isConnecting.current = true;
+  useEffect(() => {
+    // Initialize EventSource
+    console.log('Connecting to SSE endpoint...');
+    const eventSource = new EventSource(url);
+    eventSourceRef.current = eventSource;
 
-    const websocket = new WebSocket(url);
-    websocketRef.current = websocket;
-
-    websocket.onopen = () => {
-      console.log('WebSocket connection established.');
-      isConnecting.current = false; // Connection established
-    };
-    // Handle WebSocket messages
-    websocket.onmessage = (event) => {
+    // Handle the custom event 'consumptionUpdate'
+    const handleConsumptionUpdate = (event: MessageEvent) => {
       try {
         const parsedData: ConsumptionUpdate = JSON.parse(event.data);
-        // Update state by merging the new data into the existing data
         setData((prevData) => ({
           ...prevData,
-          [parsedData.para_id]: parsedData, // Update only the para_id received from WebSocket
+          [parsedData.para_id]: parsedData,
         }));
       } catch (error) {
-        console.error('Failed to parse WebSocket message:', error);
+        console.error('Failed to parse SSE message:', error);
       }
     };
 
-    // Handle WebSocket errors
-    websocket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      isConnecting.current = false; // Reset the connection state
-      reconnectWebSocket(); // Attempt to reconnect
+    eventSource.addEventListener('consumptionUpdate', handleConsumptionUpdate);
+
+    // Handle errors
+    eventSource.onerror = (error) => {
+      console.error('SSE error:', error);
     };
-
-    // Handle WebSocket closure
-    websocket.onclose = () => {
-      console.log('WebSocket closed');
-      isConnecting.current = false; // Reset the connection state
-      reconnectWebSocket(); // Attempt to reconnect when the connection closes
-    };
-  };
-
-  const reconnectWebSocket = () => {
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-    }
-
-    // Add a slight delay before attempting to reconnect
-    retryTimeoutRef.current = setTimeout(() => {
-      console.log('Reconnecting to WebSocket...');
-      connectWebSocket();
-    }, retryInterval); // Retry connecting after a delay
-  };
-
-  useEffect(() => {
-    // Initial WebSocket connection
-    connectWebSocket();
 
     // Cleanup function
     return () => {
-      if (websocketRef.current) {
-        console.log('Closing WebSocket connection.');
-        websocketRef.current.close();
-      }
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
+      console.log('Closing SSE connection.');
+      if (eventSourceRef.current) {
+        eventSourceRef.current.removeEventListener('consumptionUpdate', handleConsumptionUpdate);
+        eventSourceRef.current.close();
       }
     };
-  }, [url]); // Effect re-runs only if the WebSocket URL changes
+  }, [url]); // Effect re-runs only if the SSE URL changes
 
   return data; // Return the accumulated data for all para_ids
 };
