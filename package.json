@@ -1,7 +1,7 @@
 {
   "name": "polkadotwtf",
   "private": true,
-  "homepage": "https://jet.tf/polkadotwtf",
+  "homepage": "https://polkadot.wtf",
   "version": "0.0.1",
   "type": "module",
   "scripts": {

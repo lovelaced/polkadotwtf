@@ -34,9 +34,9 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
                 extrinsics_num: data.extrinsics_num ?? prevData[chain]?.extrinsics_num ?? 0,
                 gas: data.gas ?? prevData[chain]?.gas ?? renderLoadingIcon(),
                 weight_kb: data.weight_kb ?? prevData[chain]?.weight_kb ?? renderLoadingIcon(),
-                authorities_num: typeof data.authorities_num === 'number'
-                ? (data.authorities_num === 0 ? '?' : data.authorities_num)
-                : prevData[chain]?.authorities_num ?? renderLoadingIcon(),
+                authorities_num: data.authorities_num !== undefined
+                    ? (data.authorities_num === 404404 ? '?' : data.authorities_num)
+                    : prevData[chain]?.authorities_num ?? renderLoadingIcon(),
             },
         }));
     };
@@ -142,20 +142,24 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
             <tbody>
                 {sortedChains.map((chain, index) => {
                     const lastData = lastKnownData[chain] || {};
+                    const isRelayChain = chain === 'Polkadot' || chain === 'Kusama'; // Check if it's a relay chain
 
                     return (
-                        <tr key={index} className={chain === 'Polkadot' || chain === 'Kusama' || chain === 'AssetHub' ? 'polkadot-highlight' : ''}>
+                        <tr key={index} className={isRelayChain || chain === 'AssetHub' ? 'polkadot-highlight' : ''}>
                             <td>{chain}</td>
                             <td>{lastData.block_number || renderLoadingIcon()}</td>
                             <td>{lastData.extrinsics_num ? (lastData.extrinsics_num / BLOCK_TIME).toFixed(2) : renderLoadingIcon()}</td>
                             <td>{lastData.gas || renderLoadingIcon()}</td>
                             <td>{lastData.weight_kb || renderLoadingIcon()}</td>
-                            <td>{typeof lastData.authorities_num === 'string'
-                        ? lastData.authorities_num // Show "?" if authorities_num is "?"
-                        : lastData.authorities_num !== undefined
-                        ? lastData.authorities_num // Show the number if available
-                        : renderLoadingIcon()}
-                </td>
+                            <td>
+                                {isRelayChain
+                                    ? 'N/A' // Display "N/A" for Polkadot or Kusama
+                                    : lastData.authorities_num === 404404
+                                    ? '?' // Show "?" if authorities_num is 404404
+                                    : lastData.authorities_num !== undefined
+                                    ? lastData.authorities_num // Show the number if available
+                                    : renderLoadingIcon()}
+                            </td>
                         </tr>
                     );
                 })}
