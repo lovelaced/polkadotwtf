@@ -61,6 +61,8 @@ img {
   display: block;
   width: 20px;
   height: 20px;
+  padding-bottom: 5px;
+  margin: 4px;
   border: none;
   outline: none;
 }
@@ -93,7 +95,7 @@ img {
   border: 1px outset black;
   font-size: 15px;
   top: 100%;
-  left: 0;
+  left: -3px;
   padding: 5px;
   padding-top: 2px;
   padding-bottom: 15px;
@@ -154,7 +156,7 @@ img {
 
 .windowtitle {
   text-align: center;
-  background-color: blue;
+  background-color: black;
   height: 30px; 
   width: 60%;
   margin: auto;
@@ -401,11 +403,12 @@ tr:hover td {
     width: 100%;
   }
   .logo {
-    margin-top: 6px;
+    margin: 8px;
   }
   .dropdowntext {
     font-size: 18px;
     margin-top: 2px;
+    margin-bottom: 3px;
   }
   .twitter {
     margin-top: 0px;
