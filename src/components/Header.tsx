@@ -45,9 +45,9 @@ export const Header = () => {
 
       {/* Right section for clock and social icons */}
       <div className="right-section">
-        <div className="socialshare">
+        <div className="xlink">
           <a href="https://x.com/polkadot" target="_blank" rel="noopener noreferrer">
-            <div className="twitter"></div>
+            <div className="xlogo"></div>
           </a>
         </div>
         {/* Call formatTime with the current time */}

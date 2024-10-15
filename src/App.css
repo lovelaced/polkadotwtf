@@ -121,13 +121,13 @@ img {
   align-items: center;
 }
 
-.socialshare {
+.xlink {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.twitter {
+.xlogo {
   background-size: contain;
   background-repeat: no-repeat;
   width: 25px;
