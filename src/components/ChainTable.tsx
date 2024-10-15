@@ -82,40 +82,50 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
     const sortedChains = [...chains].sort((a, b) => {
         const aData = lastKnownData[a];
         const bData = lastKnownData[b];
-        // Check if both chains have fully loaded data
-        const aFullyLoaded = aData?.block_number && aData?.extrinsics_num && aData?.gas && aData?.weight_kb && aData?.authorities_num;
-        const bFullyLoaded = bData?.block_number && bData?.extrinsics_num && bData?.gas && bData?.weight_kb && bData?.authorities_num;
-
-        // Always prioritize fully loaded rows over partially loaded rows
-        if (aFullyLoaded && !bFullyLoaded) return -1;
-        if (!aFullyLoaded && bFullyLoaded) return 1;
-
-        // If both are fully loaded or both are partially loaded, apply the usual sorting
+    
+        // Helper function to determine if a row is incomplete
+        const isIncomplete = (data: { block_number: any; extrinsics_num: any; gas: any; weight_kb: any; authorities_num: any; }) =>
+            !data?.block_number || 
+            !data?.extrinsics_num || 
+            typeof data?.gas !== 'string' || // Ensure gas is a valid string (not a loading bar)
+            typeof data?.weight_kb !== 'string' || // Ensure weight is a valid string (not a loading bar)
+            data?.authorities_num === undefined; // Authorities num must be defined
+    
+        //const aIncomplete = isIncomplete(aData);
+        //const bIncomplete = isIncomplete(bData);
+    
+        // Sort incomplete rows to the bottom
+        //if (aIncomplete && !bIncomplete) return 1; // Move incomplete `a` below `b`
+        //if (!aIncomplete && bIncomplete) return -1; // Move incomplete `b` below `a`
+    
+        // If both rows are incomplete or both are complete, sort by the selected column
         if (!sortConfig.column || !sortConfig.direction) return 0;
-
+    
         const column = sortConfig.column;
         const direction = sortConfig.direction === 'asc' ? 1 : -1;
-
+    
         if (column === 'chainName') {
             return a.localeCompare(b) * direction; // Sort alphabetically
         }
-
+    
         if (column === 'block_number' || column === 'extrinsics_num' || column === 'authorities_num') {
             const aValue = lastKnownData[a]?.[column] || 0;
             const bValue = lastKnownData[b]?.[column] || 0;
             return (aValue - bValue) * direction;
         }
-
+    
         if (column === 'gas') {
             const aGas = parseFloat(lastKnownData[a]?.gas || '0');
             const bGas = parseFloat(lastKnownData[b]?.gas || '0');
             return (aGas - bGas) * direction;
         }
-
+    
         const aWeight = parseFloat(lastKnownData[a]?.weight_kb || '0');
         const bWeight = parseFloat(lastKnownData[b]?.weight_kb || '0');
         return (aWeight - bWeight) * direction;
     });
+    
+    
 
     const requestSort = (column: SortColumn) => {
         if (sortConfig.column === column) {
@@ -164,16 +174,14 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
                     const isRelayChain = chain === 'Polkadot' || chain === 'Kusama'; // Check if it's a relay chain
 
                     return (
-                        <tr key={index} className={isRelayChain || chain === 'AssetHub' ? 'polkadot-highlight' : ''}>
+                        <tr key={index} className={isRelayChain ? 'polkadot-highlight' : ''}>
                             <td>{chain}</td>
                             <td>{lastData.block_number || renderLoadingIcon()}</td>
                             <td>{lastData.extrinsics_num ? (lastData.extrinsics_num / BLOCK_TIME).toFixed(2) : renderLoadingIcon()}</td>
                             <td>{lastData.gas || renderLoadingIcon()}</td>
                             <td>{lastData.weight_kb || renderLoadingIcon()}</td>
                             <td>
-                                {isRelayChain
-                                    ? 'N/A' // Display "N/A" for Polkadot or Kusama
-                                    : lastData.authorities_num === 404404
+                                {lastData.authorities_num === 404404
                                     ? '?' // Show "?" if authorities_num is 404404
                                     : lastData.authorities_num !== undefined
                                     ? lastData.authorities_num // Show the number if available

@@ -54,9 +54,10 @@ img {
 }
 
 .logo {
-  background-image: url('/src/img/polkadot_32x32.png');
+  background-image: url('/src/img/pixeldot32.png');
   background-size: contain;
   background-repeat: no-repeat;
+  background-color: #ffffff;
   display: block;
   width: 20px;
   height: 20px;
