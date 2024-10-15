@@ -20,7 +20,7 @@ export const Header = () => {
       {/* Left section for logo and dropdown */}
       <div className="left-section">
         <div className="dropdown">
-          <button className="logo"></button>
+          <div className="logo"></div>
           <div className="dropdowncontent">
             <a href="https://polkadot.com/get-started" target="_blank" rel="noopener noreferrer">
               About this blockchain...
