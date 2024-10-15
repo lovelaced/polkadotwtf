@@ -376,6 +376,7 @@ tr:hover td {
   transition: all 0.1s ease-in-out;
   text-align: center;
   box-shadow: inset 2px 2px #ffffff, inset -2px -2px #8a8a8a;
+  color: #000;
 }
 
 .metric-button span {
@@ -393,7 +394,7 @@ tr:hover td {
 }
 
 .multiplier {
-  color: #e6007a;
+  color: #e6007a !important;
 }
 
 /* Description text */
@@ -479,6 +480,7 @@ tr:hover td {
   }
 
   .metric-button {
+    color: black;
     flex-direction: column;
     align-items: center;
     text-align: center;
@@ -487,6 +489,14 @@ tr:hover td {
     margin-bottom: 10px;
     font-size: 1rem;
   }
+
+  metric-button:focus,
+  metric-button:active,
+  metric-button:hover {
+    color: #000; /* ensure text stays black in all states */
+    outline: none; /* optional: remove default focus outline */
+    -webkit-tap-highlight-color: transparent; /* disable tap highlight color */
+}
 
   .metric-button span {
     display: block;
