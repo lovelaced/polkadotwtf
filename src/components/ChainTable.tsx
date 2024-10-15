@@ -96,6 +96,10 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
         const column = sortConfig.column;
         const direction = sortConfig.direction === 'asc' ? 1 : -1;
 
+        if (column === 'chainName') {
+            return a.localeCompare(b) * direction; // Sort alphabetically
+        }
+
         if (column === 'block_number' || column === 'extrinsics_num' || column === 'authorities_num') {
             const aValue = lastKnownData[a]?.[column] || 0;
             const bValue = lastKnownData[b]?.[column] || 0;
@@ -115,10 +119,13 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
 
     const requestSort = (column: SortColumn) => {
         if (sortConfig.column === column) {
+            // Toggle between 'asc', 'desc', and null for the same column
             const newDirection = sortConfig.direction === 'desc' ? 'asc' : sortConfig.direction === 'asc' ? null : 'desc';
             setSortConfig({ column, direction: newDirection });
         } else {
-            setSortConfig({ column, direction: 'desc' });
+            // Set the default direction for 'chainName' as 'asc' (A-Z), others as 'desc'
+            const initialDirection = column === 'chainName' ? 'asc' : 'desc';
+            setSortConfig({ column, direction: initialDirection });
         }
     };
 
