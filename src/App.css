@@ -154,6 +154,10 @@ img {
   width: 60%;
   margin: auto;
   border: 1px outset black;
+  box-shadow: 
+    4px 4px 0px 0px rgba(0, 0, 0, 0.5), /* main sharp shadow */
+    8px 8px 0px 0px rgba(0, 0, 0, 0.3), /* extra depth for mac os 8 feel */
+    inset 0px 0px 0px 1px #e0e0e0; /* slight inset for border definition */
   
   background: url('/src/img/windowborderleft.png') no-repeat left bottom,
               url('/src/img/windowborderright.png') no-repeat right bottom,
@@ -188,8 +192,14 @@ img {
   margin-bottom: 30px;
   background-color: white;
   border: 2px solid black;
-  box-shadow: inset 0px 0px 0px 1px #e0e0e0; 
+  border-right: 1px solid black;
+  position: relative;
+  box-shadow: 
+    4px 4px 0px 0px rgba(0, 0, 0, 0.5), /* main sharp shadow */
+    8px 8px 0px 0px rgba(0, 0, 0, 0.3), /* extra depth for mac os 8 feel */
+    inset 0px 0px 0px 1px #e0e0e0; /* slight inset for border definition */
 }
+
 
 /* Container for the radio button group */
 .relay-selector {
