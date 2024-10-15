@@ -509,9 +509,10 @@ tr:hover td {
   .divider {
     height: 20px;
   }
-  /* hide footer on mobile */
+  /* don't float footer on mobile */
   .footer {
-    display: none !important;
+    position: absolute !important;
+    bottom:unset !important;
   }
   @keyframes load-mobile {
     0% {
