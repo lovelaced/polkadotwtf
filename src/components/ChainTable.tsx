@@ -80,16 +80,18 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
     }, [consumptionData, weightData, chains]);
 
     const sortedChains = [...chains].sort((a, b) => {
-        const aData = lastKnownData[a];
-        const bData = lastKnownData[b];
+
+       // logic for moving incomplete rows to the bottom        
+       // const aData = lastKnownData[a];
+       // const bData = lastKnownData[b];
     
         // Helper function to determine if a row is incomplete
-        const isIncomplete = (data: { block_number: any; extrinsics_num: any; gas: any; weight_kb: any; authorities_num: any; }) =>
-            !data?.block_number || 
-            !data?.extrinsics_num || 
-            typeof data?.gas !== 'string' || // Ensure gas is a valid string (not a loading bar)
-            typeof data?.weight_kb !== 'string' || // Ensure weight is a valid string (not a loading bar)
-            data?.authorities_num === undefined; // Authorities num must be defined
+       // const isIncomplete = (data: { block_number: any; extrinsics_num: any; gas: any; weight_kb: any; authorities_num: any; }) =>
+         //   !data?.block_number || 
+           // !data?.extrinsics_num || 
+         //   typeof data?.gas !== 'string' || // Ensure gas is a valid string (not a loading bar)
+         //   typeof data?.weight_kb !== 'string' || // Ensure weight is a valid string (not a loading bar)
+         //   data?.authorities_num === undefined; // Authorities num must be defined
     
         //const aIncomplete = isIncomplete(aData);
         //const bIncomplete = isIncomplete(bData);
