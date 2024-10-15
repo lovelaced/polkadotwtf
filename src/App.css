@@ -98,6 +98,10 @@ img {
   padding-top: 2px;
   padding-bottom: 15px;
   z-index: 1;
+  box-shadow: 
+  2px 2px 0px 0px rgba(0, 0, 0, 0.5), /* main sharp shadow */
+  4px 4px 0px 0px rgba(0, 0, 0, 0.3), /* extra depth for mac os 8 feel */
+  inset 0px 0px 0px 1px #e0e0e0; /* slight inset for border definition */
 }
 
 .dropdowncontent a {
