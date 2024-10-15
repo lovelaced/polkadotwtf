@@ -422,9 +422,15 @@ tr:hover td {
   }
 
   .loading-bar-container {
-    width: 30px; /* Even smaller loading bar for mobile */
-    height: 8px;
+    width: 30px !important; /* Even smaller loading bar for mobile */
+    height: 8px !important;
   }
+
+  .loading-bar {
+    width: 12px !important;
+    animation: load-mobile 1.0s infinite steps(10) alternate !important;
+  }
+
 
   .metrics-total-container {
     width: 95%;
@@ -471,6 +477,14 @@ tr:hover td {
   /* hide footer on mobile */
   .footer {
     display: none !important;
+  }
+  @keyframes load-mobile {
+    0% {
+      left: 0;
+    }
+    100% {
+      left: calc(100% - 10px); /* Keep the bar inside the container */
+    }
   }
 }
 

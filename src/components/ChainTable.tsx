@@ -16,6 +16,18 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
         direction: 'desc',
     });
 
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        // Check if the screen width is below a certain size (for example 768px)
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768); // Mobile threshold
+        };
+        window.addEventListener('resize', checkMobile);
+        checkMobile(); // Initial check
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     const [lastKnownData, setLastKnownData] = useState<
         Record<PolkadotChainName | KusamaChainName, { block_number: number; extrinsics_num: number; gas: string; weight_kb: string; authorities_num: number }>
     >({});
@@ -135,7 +147,7 @@ export const ChainTable: React.FC<ChainTableProps> = ({ consumptionData, weightD
                         KB/s {renderSortIndicator('weight')}
                     </th>
                     <th onClick={() => requestSort('authorities_num')} className="sortable">
-                        Sequencers {renderSortIndicator('authorities_num')}
+                        {isMobile ? 'Seqs' : 'Sequencers'} {renderSortIndicator('authorities_num')}
                     </th>
                 </tr>
             </thead>
