@@ -87,12 +87,12 @@ img {
 }
 
 .dropdowntext {
-  font-size: 15px;
+  font-size: 16px;
   background-color: transparent;
   border: none;
   outline: none;
   font-family: 'Chicago Plain';
-  padding: 0.3rem;
+  padding-top: 0.2rem;
   padding-left: 12px;
   padding-right: 10px;
   padding-bottom: 0.2rem;
@@ -495,7 +495,8 @@ tr:hover td {
   metric-button:hover {
     color: #000; /* ensure text stays black in all states */
     outline: none; /* optional: remove default focus outline */
-    -webkit-tap-highlight-color: transparent; /* disable tap highlight color */
+    -webkit-tap-highlight-color: transparent !important; /* disable tap highlight color */
+    -moz-tap-highlight-color: transparent !important;
 }
 
   .metric-button span {
@@ -560,6 +561,7 @@ tr:hover td {
   text-align: center;
   cursor: pointer;
   transition: all 0.1s ease-in-out;
+  text-decoration: none;
 }
 
 .footer-button a {
