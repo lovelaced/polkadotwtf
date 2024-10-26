@@ -7,6 +7,7 @@ export type ConsumptionUpdate = {
     extrinsics_num: number;
     authorities_num: number;
     timestamp: number;
+    block_time_seconds: number;
     ref_time: {
       normal: number;
       operational: number;

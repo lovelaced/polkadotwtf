@@ -1,25 +1,36 @@
 import { useState, useEffect, useRef } from 'react';
 import { ConsumptionUpdate } from '../types/types';
 
-// Custom hook to subscribe to SSE and return data for all para_ids
 export const useWeightConsumption = (url: string) => {
-  const [data, setData] = useState<Record<number, ConsumptionUpdate>>({}); // Store data for all para_ids
+  const [data, setData] = useState<Record<string, { current: ConsumptionUpdate; prev: ConsumptionUpdate | null }>>({});
+
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    // Initialize EventSource
     console.log('Connecting to SSE endpoint...');
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
 
-    // Handle the custom event 'consumptionUpdate'
     const handleConsumptionUpdate = (event: MessageEvent) => {
       try {
         const parsedData: ConsumptionUpdate = JSON.parse(event.data);
-        setData((prevData) => ({
-          ...prevData,
-          [parsedData.para_id]: parsedData,
-        }));
+        const { para_id: paraId, block_number: currentBlock, relay } = parsedData;
+        const key = `${relay}-${paraId}`; // Use relay and paraId together as the key
+
+        setData((prevData) => {
+          const existingEntry = prevData[key];
+          const isDuplicate = existingEntry?.current?.block_number === currentBlock;
+
+          if (isDuplicate) return prevData;
+
+          return {
+            ...prevData,
+            [key]: {
+              prev: existingEntry?.current || null,
+              current: parsedData,
+            },
+          };
+        });
       } catch (error) {
         console.error('Failed to parse SSE message:', error);
       }
@@ -27,12 +38,10 @@ export const useWeightConsumption = (url: string) => {
 
     eventSource.addEventListener('consumptionUpdate', handleConsumptionUpdate);
 
-    // Handle errors
     eventSource.onerror = (error) => {
       console.error('SSE error:', error);
     };
 
-    // Cleanup function
     return () => {
       console.log('Closing SSE connection.');
       if (eventSourceRef.current) {
@@ -40,9 +49,9 @@ export const useWeightConsumption = (url: string) => {
         eventSourceRef.current.close();
       }
     };
-  }, [url]); // Effect re-runs only if the SSE URL changes
+  }, [url]);
 
-  return data; // Return the accumulated data for all para_ids
+  return data;
 };
 
 export default useWeightConsumption;
