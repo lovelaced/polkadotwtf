@@ -88,12 +88,24 @@ export const ChainTable: React.FC<ChainTableProps> = ({
   const requestSort = (column: SortColumn) => {
     setSortConfig((prev) => {
       if (prev.column === column) {
-        // Cycle through 'asc' -> 'desc' -> null
-        const newDirection = prev.direction === 'asc' ? 'desc' : prev.direction === 'desc' ? null : 'asc';
+        // Cycle through 'asc', 'desc', 'null' for chainName; 'desc', 'asc', 'null' for all other columns
+        const newDirection =
+          column === 'chainName'
+            ? prev.direction === 'asc'
+              ? 'desc'
+              : prev.direction === 'desc'
+              ? null
+              : 'asc'
+            : prev.direction === 'desc'
+            ? 'asc'
+            : prev.direction === 'asc'
+            ? null
+            : 'desc';
         return { column: newDirection ? column : null, direction: newDirection };
       } else {
-        // Set initial state as 'asc' for any new column selected
-        return { column, direction: 'asc' };
+        // For chainName, start with 'asc'; for all other columns, start with 'desc'
+        const initialDirection = column === 'chainName' ? 'asc' : 'desc';
+        return { column, direction: initialDirection };
       }
     });
   };
