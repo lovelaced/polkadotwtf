@@ -61,7 +61,6 @@ export const ChainTable: React.FC<ChainTableProps> = ({
     const data = entry?.current;
   
     if (!data) {
-      // Display loading icon when data is unavailable
       return {
         block_number: renderLoadingIcon(),
         extrinsics_num: renderLoadingIcon(),
@@ -71,22 +70,38 @@ export const ChainTable: React.FC<ChainTableProps> = ({
       };
     }
   
-    // Use block_time_seconds directly from the data, defaulting to 6 seconds if not provided
     const blockTimeSeconds = data.block_time_seconds || 6;
-  
-    // Calculate weight (MB/s), gas (MGas/s), and TPS based on block time
     const weightMb = weightData[chain] ? (weightData[chain] * PROOF_SIZE_MB) / blockTimeSeconds : 0;
-    const weightKb = (weightMb * MB_TO_KB).toFixed(2); // Always format with 2 decimals
-    const gas = (weightMb * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS)).toFixed(2); // 2 decimals
-    const tps = (data.extrinsics_num / blockTimeSeconds).toFixed(2); // 2 decimals
+    const weightKb = (weightMb * MB_TO_KB).toFixed(2);
+    const gas = (weightMb * (MB_TO_GAS / PROOF_SIZE_MB / GAS_TO_MGAS)).toFixed(2);
+    const tps = (data.extrinsics_num / blockTimeSeconds).toFixed(2);
   
     return {
       block_number: data.block_number,
       extrinsics_num: tps,
       gas: gas,
       weight_kb: weightKb,
-      authorities_num: data.authorities_num === 404404 ? '?' : data.authorities_num,
+      authorities_num: data.authorities_num === 0 ? '?' : data.authorities_num,
     };
+  };
+  
+  const requestSort = (column: SortColumn) => {
+    setSortConfig((prev) => {
+      if (prev.column === column) {
+        // Cycle through 'asc' -> 'desc' -> null
+        const newDirection = prev.direction === 'asc' ? 'desc' : prev.direction === 'desc' ? null : 'asc';
+        return { column: newDirection ? column : null, direction: newDirection };
+      } else {
+        // Set initial state as 'asc' for any new column selected
+        return { column, direction: 'asc' };
+      }
+    });
+  };
+  
+  
+  const renderSortIndicator = (column: SortColumn) => {
+    if (sortConfig.column !== column || !sortConfig.direction) return null;
+    return sortConfig.direction === 'asc' ? '▲' : '▼';
   };
   
 
@@ -108,18 +123,6 @@ export const ChainTable: React.FC<ChainTableProps> = ({
       return (Number(aValue) - Number(bValue)) * direction;
     });
   }, [chainMetrics, sortConfig]);
-
-  const requestSort = (column: SortColumn) => {
-    setSortConfig((prev) => ({
-      column,
-      direction: prev.column === column ? (prev.direction === 'desc' ? 'asc' : 'desc') : column === 'chainName' ? 'asc' : 'desc',
-    }));
-  };
-
-  const renderSortIndicator = (column: SortColumn) => {
-    if (sortConfig.column !== column || !sortConfig.direction) return null;
-    return sortConfig.direction === 'asc' ? '▲' : '▼';
-  };
 
   return (
     <table className="chain-table">
