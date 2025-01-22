@@ -114,3 +114,15 @@ export type ChainMetrics = {
   block: number;
   kbps: number;
 };
+
+export type ChainData = {
+  block_time_seconds?: number;
+  extrinsics_num?: number;
+  ref_time?: {
+    mandatory?: number;
+    operational?: number;
+    normal?: number;
+  };
+  total_proof_size?: number;
+};
+
