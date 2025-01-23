@@ -27,6 +27,7 @@ export const polkadotChainsConfig: ChainsConfig = {
   Frequency: { paraId: 2091, displayName: 'Frequency' },
   Hashed: { paraId: 2093, displayName: 'Hashed Network' },
   Hydration: { paraId: 2034, displayName: 'Hydration' },
+  Hyperbridge: { paraId: 3367, displayName: 'Hyperbridge' },
   Integritee: { paraId: 3359, displayName: 'Integritee Network' },
   Interlay: { paraId: 2032, displayName: 'Interlay' },
   InvArch: { paraId: 3340, displayName: 'InvArch' },

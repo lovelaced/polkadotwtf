@@ -16,7 +16,7 @@ import {
 import useWeightConsumption from './hooks/useWeightConsumption';
 import { PROOF_SIZE_MB, MB_TO_GAS, GAS_TO_MGAS } from './constants';
 
-const ALPHA = 0.3;
+const ALPHA = 0.7;
 const TARGET_WINDOW_SIZE = 30000; // 30s
 const MAX_BLOCKS_STORE = 1000;
 
@@ -55,7 +55,7 @@ function calculateRollingMetrics(blocks: BlockRecord[]) {
    // console.log('debug: timeWindow <= 0, weird data -> returning 0');
     return { tps: 0, mbs: 0, gas: 0 };
   }
-
+  // subtract 2 for system extrinsics, but just in case ensure it's not negative
   const sumExtrinsics = relevant.reduce((acc, b) => acc + Math.max(0, b.extrinsics - 2), 0);
   const sumProofSize = relevant.reduce((acc, b) => acc + b.proofSize, 0);
 
